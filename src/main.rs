@@ -85,12 +85,12 @@ fn main() {
     // Include some custom code defined in <file>.
     // This is safe because the included code doesn't do any strange things.
     unsafe {
-        let path = PathBuf::from("PkgAPI.jl");
+        let path = PathBuf::from("Gaston.jl");
         if path.exists() {
             julia.include(path).expect("Could not include file");
         } else {
             julia
-                .include("src/julia/PkgAPI.jl")
+                .include("src/julia/Gaston.jl")
                 .expect("Could not include file");
         }
     }

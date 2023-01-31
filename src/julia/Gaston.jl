@@ -1,4 +1,4 @@
-module PkgAPI
+module Gaston
 
 using Pkg
 
@@ -53,6 +53,26 @@ function remove_package(pkgname::String)
     return "$pkgname has been removed"
 end
 
+
+function make_project_in_current_dir()
+    # Activate project in current dir..
+    Pkg.activate(".")
+
+    # Must add a package in order to generate Project.toml file
+    # So... add a package that *everyone* should use in their packages:
+
+    Pkg.add("Documenter")
+
+end
+
+function make_project_in_defined_directory(directory::String)
+    Pkg.activate(".")
+
+    # Must add a package in order to generate Project.toml file
+    # So... add a package that *everyone* should use in their packages:
+
+    Pkg.add("Documenter")
+end
 # dbg!
 # status()
 # update(["CSV", "Makie"])
@@ -63,4 +83,4 @@ end
 # update(packages)
 
 
-end # module
+end # module PkgAPI
