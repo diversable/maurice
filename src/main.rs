@@ -2,6 +2,13 @@ use std::ffi::OsString;
 use std::path::PathBuf;
 
 use clap::{arg, Command};
+use jlrs::prelude::*;
+
+mod add_package;
+mod julia;
+mod status;
+use crate::add_package::add_one_pkg;
+use crate::status::status;
 
 fn cli() -> Command {
     Command::new("gs")
@@ -54,6 +61,13 @@ fn cli() -> Command {
                 .subcommand(Command::new("pop").arg(arg!([STASH])))
                 .subcommand(Command::new("apply").arg(arg!([STASH]))),
         )
+        .subcommand(
+            Command::new("pkg")
+                .about("uses the Julia Pkg manager API")
+                .args_conflicts_with_subcommands(true)
+                .subcommand(Command::new("status"))
+                .subcommand(Command::new("add").arg(arg!([PACKAGE_NAME]))),
+        )
 }
 
 fn push_args() -> Vec<clap::Arg> {
@@ -61,6 +75,27 @@ fn push_args() -> Vec<clap::Arg> {
 }
 
 fn main() {
+    // If Julia is already installed...
+    //
+    let mut julia_pending = unsafe { RuntimeBuilder::new().start().expect("Could not init Julia") };
+
+    let mut frame = StackFrame::new();
+    let mut julia = julia_pending.instance(&mut frame);
+
+    // Include some custom code defined in <file>.
+    // This is safe because the included code doesn't do any strange things.
+    unsafe {
+        let path = PathBuf::from("PkgAPI.jl");
+        if path.exists() {
+            julia.include(path).expect("Could not include file");
+        } else {
+            julia
+                .include("src/julia/PkgAPI.jl")
+                .expect("Could not include file");
+        }
+    }
+
+    // CLI
     let matches = cli().get_matches();
 
     match matches.subcommand() {
@@ -121,6 +156,27 @@ fn main() {
                 ("push", sub_matches) => {
                     let message = sub_matches.get_one::<String>("message");
                     println!("Pushing {:?}", message);
+                }
+                (name, _) => {
+                    unreachable!("Unsupported subcommand `{}`", name)
+                }
+            }
+        }
+        Some(("pkg", sub_matches)) => {
+            let pkg_command = sub_matches.subcommand().unwrap_or(("status", sub_matches));
+            match pkg_command {
+                ("status", sub_matches) => {
+                    // TODO!!!
+                    status(&mut julia);
+                }
+                ("add", sub_matches) => {
+                    // TODO!!!
+                    let add_one_package = sub_matches.get_one::<String>("PACKAGE_NAME");
+
+                    add_one_pkg(
+                        &mut julia,
+                        add_one_package.expect("Must provide a package name to add a package!"),
+                    );
                 }
                 (name, _) => {
                     unreachable!("Unsupported subcommand `{}`", name)
