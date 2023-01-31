@@ -4,11 +4,13 @@ use std::path::PathBuf;
 use clap::{arg, Command};
 use jlrs::prelude::*;
 
-mod add_package;
 mod julia;
-mod status;
-use crate::add_package::add_one_pkg;
-use crate::status::status;
+mod pkg;
+
+use pkg::add_package::*;
+use pkg::remove_package::*;
+use pkg::status::*;
+use pkg::update::*;
 
 fn cli() -> Command {
     Command::new("gs")
@@ -66,7 +68,10 @@ fn cli() -> Command {
                 .about("uses the Julia Pkg manager API")
                 .args_conflicts_with_subcommands(true)
                 .subcommand(Command::new("status"))
-                .subcommand(Command::new("add").arg(arg!([PACKAGE_NAME]))),
+                .subcommand(Command::new("add").arg(arg!([PACKAGE_NAME])))
+                .subcommand(Command::new("rm").arg(arg!([PACKAGE_NAME])))
+                .subcommand(Command::new("remove").arg(arg!([PACKAGE_NAME])))
+                .subcommand(Command::new("update").arg(arg!([PACKAGE_NAME]))),
         )
 }
 
@@ -165,18 +170,55 @@ fn main() {
         Some(("pkg", sub_matches)) => {
             let pkg_command = sub_matches.subcommand().unwrap_or(("status", sub_matches));
             match pkg_command {
-                ("status", sub_matches) => {
+                ("status", _sub_matches) => {
                     // TODO!!!
                     status(&mut julia);
                 }
                 ("add", sub_matches) => {
                     // TODO!!!
-                    let add_one_package = sub_matches.get_one::<String>("PACKAGE_NAME");
+                    let add_one_pkg = sub_matches.get_one::<String>("PACKAGE_NAME");
 
-                    add_one_pkg(
+                    add_one_package(
                         &mut julia,
-                        add_one_package.expect("Must provide a package name to add a package!"),
+                        add_one_pkg.expect("Must provide a package name to add a package!"),
                     );
+                }
+                // SHORT FORM of remove (one) package
+                ("rm", sub_matches) => {
+                    // TODO!!!
+                    let remove_one_pkg = sub_matches.get_one::<String>("PACKAGE_NAME");
+
+                    remove_one_package(
+                        &mut julia,
+                        remove_one_pkg.expect("must provide a package name to remove the package!"),
+                    );
+                }
+                // LONG FORM of remove (one) package
+                ("remove", sub_matches) => {
+                    // TODO!!!
+                    let remove_one_pkg = sub_matches.get_one::<String>("PACKAGE_NAME");
+
+                    remove_one_package(
+                        &mut julia,
+                        remove_one_pkg.expect("must provide a package name to remove the package!"),
+                    );
+                }
+                ("update", sub_matches) => {
+                    // TODO!!!
+
+                    // if you get an argument, call update package, otherwise call update_all_packages
+
+                    if let Some(_) = sub_matches.get_one::<String>("PACKAGE_NAME") {
+                        let update_one_pkg = sub_matches.get_one::<String>("PACKAGE_NAME");
+
+                        update_one_package(
+                            &mut julia,
+                            update_one_pkg
+                                .expect("Must provide a package name to update that package!"),
+                        );
+                    } else {
+                        update_all_packages(&mut julia);
+                    };
                 }
                 (name, _) => {
                     unreachable!("Unsupported subcommand `{}`", name)

@@ -22,6 +22,10 @@ function status()
 
 end
 
+#
+# UPDATE METHODS BEGIN
+#
+# update all packages
 function update()
     update = Pkg.update()
     return "Success"
@@ -29,8 +33,12 @@ end
 
 # update specific package:
 function update(pkgname::String)
-    update = Pkg.update(pkgname)
-    return "Success"
+    try
+        update = Pkg.update(pkgname)
+        return "Success"
+    catch
+        return "Package `$pkgname` not found"
+    end
 end
 
 # update multiple packages:
@@ -38,10 +46,17 @@ function update(pkgnames::Vector{String})
     update = Pkg.update(pkgnames)
     return "Success"
 end
+#
+# UPDATE METHODS END
+#
 
 function add_package(pkgname::String)
-    Pkg.add(pkgname)
-    return "$pkgname added to project environment"
+    try
+        Pkg.add(pkgname)
+        return "$pkgname added to project environment"
+    catch
+        return "Could not find $pkgname in the Julia Registry"
+    end
 end
 
 function activate_environment(project_env_name::String)

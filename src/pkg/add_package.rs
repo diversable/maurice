@@ -1,6 +1,6 @@
 use jlrs::prelude::*;
 
-pub fn add_one_pkg(julia: &mut Julia, package: &str) {
+pub fn add_one_package(julia: &mut Julia, package: &str) {
     println!("\nAdding \"{}\" to installed packages\n", &package);
 
     let package = package.to_string();
