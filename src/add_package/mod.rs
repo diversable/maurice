@@ -14,6 +14,7 @@ pub fn add_one_pkg(julia: &mut Julia, package: &str) {
                 jl_module_main
                     // the submodule doesn't have to be rooted because it's never reloaded.
                     .submodule(&mut frame, "Gaston")?
+                    .submodule(&mut frame, "PkgAPI")?
                     // the same holds true for the function: the module is never reloaded so it's globally rooted
                     .function(&mut frame, "add_package")?
                     //
@@ -39,5 +40,5 @@ pub fn add_one_pkg(julia: &mut Julia, package: &str) {
         })
         .expect("Result is an error");
 
-    println!("Result: {:?}", add.unwrap());
+    println!("Result: {:?}", add.expect("add package via Julia failed"));
 }

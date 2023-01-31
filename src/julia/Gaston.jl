@@ -1,5 +1,6 @@
 module Gaston
 
+module PkgAPI
 using Pkg
 
 # function status()::Cint
@@ -84,3 +85,4 @@ end
 
 
 end # module PkgAPI
+end # module Gaston

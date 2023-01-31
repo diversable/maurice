@@ -14,6 +14,7 @@ pub fn status(julia: &mut Julia) {
                 jl_module_main
                     // the submodule doesn't have to be rooted because it's never reloaded.
                     .submodule(&mut frame, "Gaston")?
+                    .submodule(&mut frame, "PkgAPI")?
                     // the same holds true for the function: the module is never reloaded so it's globally rooted
                     .function(&mut frame, "status")?
                     //
@@ -38,5 +39,8 @@ pub fn status(julia: &mut Julia) {
         })
         .expect("Result is an error");
 
-    println!("\nStatus: {:?}", status.unwrap());
+    println!(
+        "\nStatus: {:?}",
+        status.expect("getting status from Julia failed...")
+    );
 }
