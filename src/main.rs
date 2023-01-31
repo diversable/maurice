@@ -7,6 +7,7 @@ use jlrs::prelude::*;
 mod julia;
 mod pkg;
 
+use pkg::activate::activate_env_w_name;
 use pkg::add_package::*;
 use pkg::remove_package::*;
 use pkg::status::*;
@@ -72,6 +73,12 @@ fn cli() -> Command {
                 .subcommand(Command::new("rm").arg(arg!([PACKAGE_NAME])))
                 .subcommand(Command::new("remove").arg(arg!([PACKAGE_NAME])))
                 .subcommand(Command::new("update").arg(arg!([PACKAGE_NAME]))),
+        )
+        .subcommand(
+            Command::new("new")
+                .about("creates new projects, packages, and environments")
+                .args_conflicts_with_subcommands(true)
+                .subcommand(Command::new("env").arg(arg!([ENVIRONMENT_NAME]))),
         )
 }
 
@@ -169,6 +176,7 @@ fn main() {
         }
         Some(("pkg", sub_matches)) => {
             let pkg_command = sub_matches.subcommand().unwrap_or(("status", sub_matches));
+
             match pkg_command {
                 ("status", _sub_matches) => {
                     // TODO!!!
@@ -222,6 +230,26 @@ fn main() {
                 }
                 (name, _) => {
                     unreachable!("Unsupported subcommand `{}`", name)
+                }
+            }
+        }
+        Some(("new", sub_matches)) => {
+            let new_command = sub_matches
+                .subcommand()
+                // If an argument isn't supplied to `gs new `, then default to creating a new environment
+                .unwrap_or(("env", sub_matches));
+
+            match new_command {
+                ("env", sub_matches) => {
+                    let activate_env = sub_matches.get_one::<String>("ENVIRONMENT_NAME");
+
+                    activate_env_w_name(
+                        &mut julia,
+                        activate_env.expect("tried and failed to activate environment..."),
+                    );
+                }
+                _ => {
+                    unreachable!("Unsupported subcommand",)
                 }
             }
         }

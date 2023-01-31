@@ -1,5 +1,5 @@
 [package]
-name = "gs"
+name = "gsn"
 description = "Gaston (gs): the Julia installer and project manager"
 version = "0.1.0"
 edition = "2021"
