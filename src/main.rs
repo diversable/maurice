@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 
-use nix::libc::CS;
 use nix::unistd::execvp;
 use std::ffi::{CString, OsString};
 
