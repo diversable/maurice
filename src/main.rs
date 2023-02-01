@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use nix::libc::CS;
 use nix::unistd::execvp;
 use std::ffi::{CString, OsString};
 
@@ -78,9 +79,10 @@ fn main() {
             let julia_executable_string = CString::new("julia").expect("CString::new failed...");
             let julia_executable = julia_executable_string.as_c_str();
 
-            let julia_args = CString::new("--project='@.'").expect("CString::new failed...");
+            let arg1 = CString::new("julia").expect("CString::new failed...");
+            let julia_args = CString::new("--project=@.").expect("CString::new failed...");
 
-            execvp(julia_executable, &[julia_args]).expect("failed to exec Julia process...");
+            execvp(julia_executable, &[arg1, julia_args]).expect("failed to exec Julia process...");
         }
         Some(("pkg", sub_matches)) => {
             let pkg_command = sub_matches.subcommand().unwrap_or(("status", sub_matches));
