@@ -4,13 +4,12 @@ use nix::unistd::execvp;
 use std::ffi::{CString, OsString};
 
 use std::path::PathBuf;
-// use std::process;
 
 use clap::{arg, ColorChoice, Command};
 use jlrs::prelude::*;
 
 mod julia;
-// mod juliaup;
+
 mod pkg;
 
 use pkg::activate::{activate_env_in_current_dir, activate_env_w_name};
@@ -21,7 +20,7 @@ use pkg::update::*;
 
 fn cli() -> Command {
     Command::new("gsn")
-        .about("\nGaston (gsn): The Julia installer and project manager")
+        .about("\nGaston (gsn): The Julia project manager")
         .subcommand_required(true)
         .arg_required_else_help(true)
         .allow_external_subcommands(true)
@@ -29,51 +28,6 @@ fn cli() -> Command {
         .visible_alias("gaston")
         .display_name("gaston")
         .infer_subcommands(true)
-        // .subcommand(
-        //     Command::new("clone")
-        //         .about("clones repos")
-        //         .arg(arg!(<REMOTE> "The remote to clone"))
-        //         .arg_required_else_help(true),
-        // )
-        // .subcommand(
-        //     Command::new("diff")
-        //         .about("Compare two commits")
-        //         .arg(arg!(base: [COMMIT]))
-        //         .arg(arg!(head: [COMMIT]))
-        //         .arg(arg!(path: [PATH]).last(true))
-        //         .arg(
-        //             arg!(--color <WHEN>)
-        //                 .value_parser(["always", "auto", "never"])
-        //                 .num_args(0..=1)
-        //                 .require_equals(true)
-        //                 .default_value("auto")
-        //                 .default_missing_value("always"),
-        //         ),
-        // )
-        // .subcommand(
-        //     Command::new("push")
-        //         .about("pushes repo to a remote")
-        //         .arg(arg!(<REMOTE> "The remote to target"))
-        //         .arg_required_else_help(true),
-        // )
-        // .subcommand(
-        //     Command::new("add")
-        //         .about("add things to the repo")
-        //         .arg_required_else_help(true)
-        //         .arg(
-        //             arg!(<PATH> ... "Files and folders to add")
-        //                 .value_parser(clap::value_parser!(PathBuf)),
-        //         ),
-        // )
-        // .subcommand(
-        //     Command::new("stash")
-        //         .about("stashes changes for later")
-        //         .args_conflicts_with_subcommands(true)
-        //         .args(push_args())
-        //         .subcommand(Command::new("push").args(push_args()))
-        //         .subcommand(Command::new("pop").arg(arg!([STASH])))
-        //         .subcommand(Command::new("apply").arg(arg!([STASH]))),
-        // )
         .subcommand(
             Command::new("jl")
                 .about("start the Julia REPL using the project in the current directory"),
@@ -94,10 +48,6 @@ fn cli() -> Command {
                 .args_conflicts_with_subcommands(true)
                 .subcommand(Command::new("env").arg(arg!([ENVIRONMENT_NAME]))),
         )
-}
-
-fn push_args() -> Vec<clap::Arg> {
-    vec![arg!(-m --message <MESSAGE>)]
 }
 
 fn main() {
@@ -292,3 +242,90 @@ fn main() {
         _ => unreachable!(),
     }
 }
+
+//---------------------------------------------------------------------------------
+//
+//
+// Example Clap sub-commands
+// for reference
+//
+//
+//
+//
+// .subcommand(
+//     Command::new("clone")
+//         .about("clones repos")
+//         .arg(arg!(<REMOTE> "The remote to clone"))
+//         .arg_required_else_help(true),
+// )
+// .subcommand(
+//     Command::new("diff")
+//         .about("Compare two commits")
+//         .arg(arg!(base: [COMMIT]))
+//         .arg(arg!(head: [COMMIT]))
+//         .arg(arg!(path: [PATH]).last(true))
+//         .arg(
+//             arg!(--color <WHEN>)
+//                 .value_parser(["always", "auto", "never"])
+//                 .num_args(0..=1)
+//                 .require_equals(true)
+//                 .default_value("auto")
+//                 .default_missing_value("always"),
+//         ),
+// )
+// .subcommand(
+//     Command::new("push")
+//         .about("pushes repo to a remote")
+//         .arg(arg!(<REMOTE> "The remote to target"))
+//         .arg_required_else_help(true),
+// )
+// .subcommand(
+//     Command::new("add")
+//         .about("add things to the repo")
+//         .arg_required_else_help(true)
+//         .arg(
+//             arg!(<PATH> ... "Files and folders to add")
+//                 .value_parser(clap::value_parser!(PathBuf)),
+//         ),
+// )
+// .subcommand(
+//     Command::new("stash")
+//         .about("stashes changes for later")
+//         .args_conflicts_with_subcommands(true)
+//         .args(push_args())
+//         .subcommand(Command::new("push").args(push_args()))
+//         .subcommand(Command::new("pop").arg(arg!([STASH])))
+//         .subcommand(Command::new("apply").arg(arg!([STASH]))),
+// )
+//
+//
+// fn push_args() -> Vec<clap::Arg> {
+//     vec![arg!(-m --message <MESSAGE>)]
+// }
+//
+//
+// -----------------------------------------
+//
+//
+//
+// Example Sub-command matches
+//
+//
+// match matches.subcommand() {
+// Some(("clone", sub_matches)) => {
+//     println!(
+//         "Cloning {}",
+//         sub_matches.get_one::<String>("REMOTE").expect("required")
+//     );
+// }
+// Some(("diff", sub_matches)) => {
+//     let color = sub_matches
+//         .get_one::<String>("color")
+//         .map(|s| s.as_str())
+//         .expect("defaulted in Clap");
+
+//     let mut base = sub_matches.get_one::<String>("base").map(|s| s.as_str());
+//     let mut head = sub_matches.get_one::<String>("head").map(|s| s.as_str());
+//     let mut path = sub_matches.get_one::<String>("path").map(|s| s.as_str());
+
+//     if path.is_none() {
