@@ -9,7 +9,6 @@ use clap::{arg, ColorChoice, Command};
 use jlrs::prelude::*;
 
 mod julia;
-
 mod pkg;
 
 use pkg::activate::{activate_env_in_current_dir, activate_env_w_name};
@@ -75,69 +74,6 @@ fn main() {
     let matches = cli().get_matches();
 
     match matches.subcommand() {
-        // Some(("clone", sub_matches)) => {
-        //     println!(
-        //         "Cloning {}",
-        //         sub_matches.get_one::<String>("REMOTE").expect("required")
-        //     );
-        // }
-        // Some(("diff", sub_matches)) => {
-        //     let color = sub_matches
-        //         .get_one::<String>("color")
-        //         .map(|s| s.as_str())
-        //         .expect("defaulted in Clap");
-
-        //     let mut base = sub_matches.get_one::<String>("base").map(|s| s.as_str());
-        //     let mut head = sub_matches.get_one::<String>("head").map(|s| s.as_str());
-        //     let mut path = sub_matches.get_one::<String>("path").map(|s| s.as_str());
-
-        //     if path.is_none() {
-        //         path = head;
-        //         head = None;
-        //         if path.is_none() {
-        //             path = base;
-        //             base = None;
-        //         }
-        //     }
-        //     let base = base.unwrap_or("stage");
-        //     let head = head.unwrap_or("worktree");
-        //     let path = path.unwrap_or("");
-        //     println!("Diffing {} ... {} {} (color={})", base, head, path, color);
-        // }
-        // Some(("push", sub_matches)) => {
-        //     println!(
-        //         "Pushing to {}",
-        //         sub_matches.get_one::<String>("REMOTE").expect("required")
-        //     );
-        // }
-        // Some(("add", sub_matches)) => {
-        //     let paths = sub_matches
-        //         .get_many::<PathBuf>("PATH")
-        //         .into_iter()
-        //         .flatten()
-        //         .collect::<Vec<_>>();
-        //     println!("Adding {:?}", paths);
-        // }
-        // Some(("stash", sub_matches)) => {
-        //     let stash_command = sub_matches.subcommand().unwrap_or(("push", sub_matches));
-        //     match stash_command {
-        //         ("apply", sub_matches) => {
-        //             let stash = sub_matches.get_one::<String>("STASH");
-        //             println!("Applying {:?}", stash);
-        //         }
-        //         ("pop", sub_matches) => {
-        //             let stash = sub_matches.get_one::<String>("STASH");
-        //             println!("Popping {:?}", stash);
-        //         }
-        //         ("push", sub_matches) => {
-        //             let message = sub_matches.get_one::<String>("message");
-        //             println!("Pushing {:?}", message);
-        //         }
-        //         (name, _) => {
-        //             unreachable!("Unsupported subcommand `{}`", name)
-        //         }
-        //     }
-        // }
         Some(("jl", _sub_matches)) => {
             let julia_executable_string = CString::new("julia").expect("CString::new failed...");
             let julia_executable = julia_executable_string.as_c_str();
@@ -151,11 +87,9 @@ fn main() {
 
             match pkg_command {
                 ("status", _sub_matches) => {
-                    // TODO!!!
                     status(&mut julia);
                 }
                 ("add", sub_matches) => {
-                    // TODO!!!
                     let add_one_pkg = sub_matches.get_one::<String>("PACKAGE_NAME");
 
                     add_one_package(
@@ -165,7 +99,6 @@ fn main() {
                 }
                 // SHORT FORM of remove (one) package
                 ("rm", sub_matches) => {
-                    // TODO!!!
                     let remove_one_pkg = sub_matches.get_one::<String>("PACKAGE_NAME");
 
                     remove_one_package(
@@ -175,7 +108,6 @@ fn main() {
                 }
                 // LONG FORM of remove (one) package
                 ("remove", sub_matches) => {
-                    // TODO!!!
                     let remove_one_pkg = sub_matches.get_one::<String>("PACKAGE_NAME");
 
                     remove_one_package(
@@ -184,8 +116,6 @@ fn main() {
                     );
                 }
                 ("update", sub_matches) => {
-                    // TODO!!!
-
                     // if you get an argument, call update package, otherwise call update_all_packages
 
                     if let Some(_) = sub_matches.get_one::<String>("PACKAGE_NAME") {
@@ -329,3 +259,49 @@ fn main() {
 //     let mut path = sub_matches.get_one::<String>("path").map(|s| s.as_str());
 
 //     if path.is_none() {
+//         path = head;
+//         head = None;
+//         if path.is_none() {
+//             path = base;
+//             base = None;
+//         }
+//     }
+//     let base = base.unwrap_or("stage");
+//     let head = head.unwrap_or("worktree");
+//     let path = path.unwrap_or("");
+//     println!("Diffing {} ... {} {} (color={})", base, head, path, color);
+// }
+// Some(("push", sub_matches)) => {
+//     println!(
+//         "Pushing to {}",
+//         sub_matches.get_one::<String>("REMOTE").expect("required")
+//     );
+// }
+// Some(("add", sub_matches)) => {
+//     let paths = sub_matches
+//         .get_many::<PathBuf>("PATH")
+//         .into_iter()
+//         .flatten()
+//         .collect::<Vec<_>>();
+//     println!("Adding {:?}", paths);
+// }
+// Some(("stash", sub_matches)) => {
+//     let stash_command = sub_matches.subcommand().unwrap_or(("push", sub_matches));
+//     match stash_command {
+//         ("apply", sub_matches) => {
+//             let stash = sub_matches.get_one::<String>("STASH");
+//             println!("Applying {:?}", stash);
+//         }
+//         ("pop", sub_matches) => {
+//             let stash = sub_matches.get_one::<String>("STASH");
+//             println!("Popping {:?}", stash);
+//         }
+//         ("push", sub_matches) => {
+//             let message = sub_matches.get_one::<String>("message");
+//             println!("Pushing {:?}", message);
+//         }
+//         (name, _) => {
+//             unreachable!("Unsupported subcommand `{}`", name)
+//         }
+//     }
+// }
