@@ -29,7 +29,10 @@ fn cli() -> Command {
         .infer_subcommands(true)
         .subcommand(
             Command::new("jl")
-                .about("start the Julia REPL using the project in the current directory"),
+                .about("start the Julia REPL using the project in the current directory")
+                .args_conflicts_with_subcommands(true)
+                // TODO! add argument to Pluto to start on a different port, etc....
+                .subcommand(Command::new("pluto")),
         )
         .subcommand(
             Command::new("pkg")
@@ -74,14 +77,68 @@ fn main() {
     let matches = cli().get_matches();
 
     match matches.subcommand() {
-        Some(("jl", _sub_matches)) => {
-            let julia_executable_string = CString::new("julia").expect("CString::new failed...");
-            let julia_executable = julia_executable_string.as_c_str();
+        Some(("jl", sub_matches)) => {
+            let jl_command = sub_matches.subcommand().unwrap_or(("run", sub_matches));
+            // .expect("messed up gsn jl command");
 
-            let arg1 = CString::new("julia").expect("CString::new failed...");
-            let julia_args = CString::new("--project=@.").expect("CString::new failed...");
+            match jl_command {
+                ("pluto", _sub_matches) => {
+                    // TODO! Need to check to make sure that Pluto is installed first, or just install it in the environment...
+                    //
+                    // Run Pluto via `julia -E 'using Pluto; Pluto.run()'` command
+                    //
+                    //
+                    let julia_executable_string =
+                        CString::new("julia").expect("CString::new failed...");
+                    let julia_executable = julia_executable_string.as_c_str();
 
-            execvp(julia_executable, &[arg1, julia_args]).expect("failed to exec Julia process...");
+                    let julia_args_julia = CString::new("julia").expect("CString::new failed...");
+
+                    let julia_args_execute = CString::new("-E").expect("CString::new failed...");
+                    let julia_args_pluto =
+                        CString::new("using Pluto; Pluto.run()").expect("CString::new failed...");
+
+                    execvp(
+                        julia_executable,
+                        &[julia_args_julia, julia_args_execute, julia_args_pluto],
+                    )
+                    .expect("failed to exec Julia process...");
+                }
+                // if no sub-command, then start the julia process...
+                ("run", _sub_matches) => {
+                    let julia_executable_string =
+                        CString::new("julia").expect("CString::new failed...");
+                    let julia_executable = julia_executable_string.as_c_str();
+
+                    let julia_args_julia = CString::new("julia").expect("CString::new failed...");
+                    let julia_args_project =
+                        CString::new("--project=@.").expect("CString::new failed...");
+
+                    execvp(julia_executable, &[julia_args_julia, julia_args_project])
+                        .expect("failed to exec Julia process...");
+                }
+                _ => {
+                    let julia_executable_string =
+                        CString::new("julia").expect("CString::new failed...");
+                    let julia_executable = julia_executable_string.as_c_str();
+
+                    let julia_args_julia = CString::new("julia").expect("CString::new failed...");
+                    let julia_args_project =
+                        CString::new("--project=@.").expect("CString::new failed...");
+
+                    execvp(julia_executable, &[julia_args_julia, julia_args_project])
+                        .expect("failed to exec Julia process...");
+                }
+            }
+
+            // let julia_executable_string = CString::new("julia").expect("CString::new failed...");
+            // let julia_executable = julia_executable_string.as_c_str();
+
+            // let julia_args_julia = CString::new("julia").expect("CString::new failed...");
+            // let julia_args_project = CString::new("--project=@.").expect("CString::new failed...");
+
+            // execvp(julia_executable, &[julia_args_julia, julia_args_project])
+            //     .expect("failed to exec Julia process...");
         }
         Some(("pkg", sub_matches)) => {
             let pkg_command = sub_matches.subcommand().unwrap_or(("status", sub_matches));
@@ -139,7 +196,7 @@ fn main() {
         Some(("new", sub_matches)) => {
             let new_command = sub_matches
                 .subcommand()
-                // If an argument isn't supplied to `gs new `, then default to creating a new environment
+                // If an argument isn't supplied to `gsn new <nothing>`, then default to creating a new environment
                 .unwrap_or(("env", sub_matches));
 
             match new_command {
