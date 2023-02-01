@@ -7,5 +7,20 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.68"
+chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4.1.4", features = ["derive", "cargo"] }
+cluFlock = "1.2.7"
+console = "0.15.5"
+ctrlc = "3.2.4"
+dirs = "4.0.0"
 jlrs = { version = "0.17.0", features = ["sync-rt"] }
+nix = "0.26"
+normpath = "1.1.0"
+semver = "1.0.16"
+serde = { version = "1.0.152", features = ["derive"] }
+serde_json = "1.0.91"
+thiserror = "1.0.38"
+
+[target.'cfg(not(windows))'.dependencies]
+nix = { version = "0.26" }

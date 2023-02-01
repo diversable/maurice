@@ -1,68 +1,82 @@
-use std::ffi::OsString;
-use std::path::PathBuf;
+#![allow(dead_code)]
 
-use clap::{arg, Command};
+use nix::unistd::execvp;
+use std::ffi::{CString, OsString};
+
+use std::path::PathBuf;
+// use std::process;
+
+use clap::{arg, ColorChoice, Command};
 use jlrs::prelude::*;
 
 mod julia;
+// mod juliaup;
 mod pkg;
 
-use pkg::activate::activate_env_w_name;
+use pkg::activate::{activate_env_in_current_dir, activate_env_w_name};
 use pkg::add_package::*;
 use pkg::remove_package::*;
 use pkg::status::*;
 use pkg::update::*;
 
 fn cli() -> Command {
-    Command::new("gs")
-        .about("Julia installer and project manager")
+    Command::new("gsn")
+        .about("\nGaston (gsn): The Julia installer and project manager")
         .subcommand_required(true)
         .arg_required_else_help(true)
         .allow_external_subcommands(true)
+        .color(ColorChoice::Always)
+        .visible_alias("gaston")
+        .display_name("gaston")
+        .infer_subcommands(true)
+        // .subcommand(
+        //     Command::new("clone")
+        //         .about("clones repos")
+        //         .arg(arg!(<REMOTE> "The remote to clone"))
+        //         .arg_required_else_help(true),
+        // )
+        // .subcommand(
+        //     Command::new("diff")
+        //         .about("Compare two commits")
+        //         .arg(arg!(base: [COMMIT]))
+        //         .arg(arg!(head: [COMMIT]))
+        //         .arg(arg!(path: [PATH]).last(true))
+        //         .arg(
+        //             arg!(--color <WHEN>)
+        //                 .value_parser(["always", "auto", "never"])
+        //                 .num_args(0..=1)
+        //                 .require_equals(true)
+        //                 .default_value("auto")
+        //                 .default_missing_value("always"),
+        //         ),
+        // )
+        // .subcommand(
+        //     Command::new("push")
+        //         .about("pushes repo to a remote")
+        //         .arg(arg!(<REMOTE> "The remote to target"))
+        //         .arg_required_else_help(true),
+        // )
+        // .subcommand(
+        //     Command::new("add")
+        //         .about("add things to the repo")
+        //         .arg_required_else_help(true)
+        //         .arg(
+        //             arg!(<PATH> ... "Files and folders to add")
+        //                 .value_parser(clap::value_parser!(PathBuf)),
+        //         ),
+        // )
+        // .subcommand(
+        //     Command::new("stash")
+        //         .about("stashes changes for later")
+        //         .args_conflicts_with_subcommands(true)
+        //         .args(push_args())
+        //         .subcommand(Command::new("push").args(push_args()))
+        //         .subcommand(Command::new("pop").arg(arg!([STASH])))
+        //         .subcommand(Command::new("apply").arg(arg!([STASH]))),
+        // )
         .subcommand(
-            Command::new("clone")
-                .about("clones repos")
-                .arg(arg!(<REMOTE> "The remote to clone"))
-                .arg_required_else_help(true),
-        )
-        .subcommand(
-            Command::new("diff")
-                .about("Compare two commits")
-                .arg(arg!(base: [COMMIT]))
-                .arg(arg!(head: [COMMIT]))
-                .arg(arg!(path: [PATH]).last(true))
-                .arg(
-                    arg!(--color <WHEN>)
-                        .value_parser(["always", "auto", "never"])
-                        .num_args(0..=1)
-                        .require_equals(true)
-                        .default_value("auto")
-                        .default_missing_value("always"),
-                ),
-        )
-        .subcommand(
-            Command::new("push")
-                .about("pushes repo to a remote")
-                .arg(arg!(<REMOTE> "The remote to target"))
-                .arg_required_else_help(true),
-        )
-        .subcommand(
-            Command::new("add")
-                .about("add things to the repo")
-                .arg_required_else_help(true)
-                .arg(
-                    arg!(<PATH> ... "Files and folders to add")
-                        .value_parser(clap::value_parser!(PathBuf)),
-                ),
-        )
-        .subcommand(
-            Command::new("stash")
-                .about("stashes changes for later")
-                .args_conflicts_with_subcommands(true)
-                .args(push_args())
-                .subcommand(Command::new("push").args(push_args()))
-                .subcommand(Command::new("pop").arg(arg!([STASH])))
-                .subcommand(Command::new("apply").arg(arg!([STASH]))),
+            Command::new("jl")
+                .about("start the Julia REPL using the project in the current directory"),
         )
         .subcommand(
             Command::new("pkg")
@@ -97,13 +111,13 @@ fn main() {
     // Include some custom code defined in <file>.
     // This is safe because the included code doesn't do any strange things.
     unsafe {
-        let path = PathBuf::from("Gaston.jl");
+        let path = PathBuf::from("./julia/Gaston.jl");
         if path.exists() {
             julia.include(path).expect("Could not include file");
         } else {
             julia
                 .include("src/julia/Gaston.jl")
-                .expect("Could not include file");
+                .expect("Else path: Could not include file");
         }
     }
 
@@ -111,68 +125,76 @@ fn main() {
     let matches = cli().get_matches();
 
     match matches.subcommand() {
-        Some(("clone", sub_matches)) => {
-            println!(
-                "Cloning {}",
-                sub_matches.get_one::<String>("REMOTE").expect("required")
-            );
-        }
-        Some(("diff", sub_matches)) => {
-            let color = sub_matches
-                .get_one::<String>("color")
-                .map(|s| s.as_str())
-                .expect("defaulted in Clap");
+        // Some(("clone", sub_matches)) => {
+        //     println!(
+        //         "Cloning {}",
+        //         sub_matches.get_one::<String>("REMOTE").expect("required")
+        //     );
+        // }
+        // Some(("diff", sub_matches)) => {
+        //     let color = sub_matches
+        //         .get_one::<String>("color")
+        //         .map(|s| s.as_str())
+        //         .expect("defaulted in Clap");
 
-            let mut base = sub_matches.get_one::<String>("base").map(|s| s.as_str());
-            let mut head = sub_matches.get_one::<String>("head").map(|s| s.as_str());
-            let mut path = sub_matches.get_one::<String>("path").map(|s| s.as_str());
+        //     let mut base = sub_matches.get_one::<String>("base").map(|s| s.as_str());
+        //     let mut head = sub_matches.get_one::<String>("head").map(|s| s.as_str());
+        //     let mut path = sub_matches.get_one::<String>("path").map(|s| s.as_str());
 
-            if path.is_none() {
-                path = head;
-                head = None;
-                if path.is_none() {
-                    path = base;
-                    base = None;
-                }
-            }
-            let base = base.unwrap_or("stage");
-            let head = head.unwrap_or("worktree");
-            let path = path.unwrap_or("");
-            println!("Diffing {} ... {} {} (color={})", base, head, path, color);
-        }
-        Some(("push", sub_matches)) => {
-            println!(
-                "Pushing to {}",
-                sub_matches.get_one::<String>("REMOTE").expect("required")
-            );
-        }
-        Some(("add", sub_matches)) => {
-            let paths = sub_matches
-                .get_many::<PathBuf>("PATH")
-                .into_iter()
-                .flatten()
-                .collect::<Vec<_>>();
-            println!("Adding {:?}", paths);
-        }
-        Some(("stash", sub_matches)) => {
-            let stash_command = sub_matches.subcommand().unwrap_or(("push", sub_matches));
-            match stash_command {
-                ("apply", sub_matches) => {
-                    let stash = sub_matches.get_one::<String>("STASH");
-                    println!("Applying {:?}", stash);
-                }
-                ("pop", sub_matches) => {
-                    let stash = sub_matches.get_one::<String>("STASH");
-                    println!("Popping {:?}", stash);
-                }
-                ("push", sub_matches) => {
-                    let message = sub_matches.get_one::<String>("message");
-                    println!("Pushing {:?}", message);
-                }
-                (name, _) => {
-                    unreachable!("Unsupported subcommand `{}`", name)
-                }
-            }
+        //     if path.is_none() {
+        //         path = head;
+        //         head = None;
+        //         if path.is_none() {
+        //             path = base;
+        //             base = None;
+        //         }
+        //     }
+        //     let base = base.unwrap_or("stage");
+        //     let head = head.unwrap_or("worktree");
+        //     let path = path.unwrap_or("");
+        //     println!("Diffing {} ... {} {} (color={})", base, head, path, color);
+        // }
+        // Some(("push", sub_matches)) => {
+        //     println!(
+        //         "Pushing to {}",
+        //         sub_matches.get_one::<String>("REMOTE").expect("required")
+        //     );
+        // }
+        // Some(("add", sub_matches)) => {
+        //     let paths = sub_matches
+        //         .get_many::<PathBuf>("PATH")
+        //         .into_iter()
+        //         .flatten()
+        //         .collect::<Vec<_>>();
+        //     println!("Adding {:?}", paths);
+        // }
+        // Some(("stash", sub_matches)) => {
+        //     let stash_command = sub_matches.subcommand().unwrap_or(("push", sub_matches));
+        //     match stash_command {
+        //         ("apply", sub_matches) => {
+        //             let stash = sub_matches.get_one::<String>("STASH");
+        //             println!("Applying {:?}", stash);
+        //         }
+        //         ("pop", sub_matches) => {
+        //             let stash = sub_matches.get_one::<String>("STASH");
+        //             println!("Popping {:?}", stash);
+        //         }
+        //         ("push", sub_matches) => {
+        //             let message = sub_matches.get_one::<String>("message");
+        //             println!("Pushing {:?}", message);
+        //         }
+        //         (name, _) => {
+        //             unreachable!("Unsupported subcommand `{}`", name)
+        //         }
+        //     }
+        // }
+        Some(("jl", _sub_matches)) => {
+            let julia_executable_string = CString::new("julia").expect("CString::new failed...");
+            let julia_executable = julia_executable_string.as_c_str();
+
+            let julia_args = CString::new("--project='@.'").expect("CString::new failed...");
+
+            execvp(julia_executable, &[julia_args]).expect("failed to exec Julia process...");
         }
         Some(("pkg", sub_matches)) => {
             let pkg_command = sub_matches.subcommand().unwrap_or(("status", sub_matches));
@@ -240,13 +262,18 @@ fn main() {
                 .unwrap_or(("env", sub_matches));
 
             match new_command {
+                // if you get an argument, call env with the arg. Otherwise, activate environment in current directory
                 ("env", sub_matches) => {
-                    let activate_env = sub_matches.get_one::<String>("ENVIRONMENT_NAME");
+                    if let Some(_) = sub_matches.get_one::<String>("ENVIRONMENT_NAME") {
+                        let activate_env = sub_matches.get_one::<String>("ENVIRONMENT_NAME");
 
-                    activate_env_w_name(
-                        &mut julia,
-                        activate_env.expect("tried and failed to activate environment..."),
-                    );
+                        activate_env_w_name(
+                            &mut julia,
+                            activate_env.expect("tried and failed to activate environment..."),
+                        );
+                    } else {
+                        activate_env_in_current_dir(&mut julia);
+                    }
                 }
                 _ => {
                     unreachable!("Unsupported subcommand",)

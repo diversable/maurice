@@ -3,6 +3,9 @@ module Gaston
 module PkgAPI
 using Pkg
 
+#
+# STATUS METHOD BEGIN
+#
 # function status()::Cint
 
 #     # Pkg.status(; outdated=true, IO=stderr)
@@ -21,6 +24,9 @@ function status()
     return "Ready"
 
 end
+#
+# STATUS METHOD END
+#
 
 #
 # UPDATE METHODS BEGIN
@@ -59,16 +65,19 @@ function add_package(pkgname::String)
     end
 end
 
-function activate_environment(project_env_name::String)
-    Pkg.activate(project_env_name)
-    return "New project created: $project_env_name"
-end
+
 
 function remove_package(pkgname::String)
     Pkg.rm(pkgname)
     return "$pkgname has been removed"
 end
 
+
+function activate_environment(project_env_name::String)
+    Pkg.activate(project_env_name)
+    Pkg.add("Documenter")
+    return "New project created: $project_env_name"
+end
 
 function make_project_in_current_dir()
     # Activate project in current dir..
