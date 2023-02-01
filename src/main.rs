@@ -26,13 +26,17 @@ fn cli() -> Command {
         .color(ColorChoice::Always)
         .visible_alias("gaston")
         .display_name("gaston")
+        // TODO! The workflow tip about `infer_subcommands` should be noted in the CLI's help text!
         .infer_subcommands(true)
         .subcommand(
             Command::new("jl")
                 .about("start the Julia REPL using the project in the current directory")
                 .args_conflicts_with_subcommands(true)
+                // TODO! should I implement a `repl` subcommand as well, which does the same thing as the 'run' command? I'm leaning towards yes...
+                .subcommand(Command::new("run"))
                 // TODO! add argument to Pluto to start on a different port, etc....
-                .subcommand(Command::new("pluto")),
+                .subcommand(Command::new("pluto"))
+                .subcommand(Command::new("edit")),
         )
         .subcommand(
             Command::new("pkg")
@@ -42,6 +46,14 @@ fn cli() -> Command {
                 .subcommand(Command::new("add").arg(arg!([PACKAGE_NAME])))
                 .subcommand(Command::new("rm").arg(arg!([PACKAGE_NAME])))
                 .subcommand(Command::new("remove").arg(arg!([PACKAGE_NAME])))
+                //
+                // NB! Because `infer_subcommands` is turned on, above, you can also use "up" as a short form to activate the `update` command.
+                // TODO! This workflow tip about `infer_subcommands` should be noted as an example in the help docs printed on the cmd line.
+                // TODO! (cont'd) Eg. use `gsn p up` to update packages.
+                //
+                //
+                // TODO! need to have a flag to differentiate between updating the local environment and the global env
+                // Todo! (con'td) Which should be the default? Local env as default, or global env as default?
                 .subcommand(Command::new("update").arg(arg!([PACKAGE_NAME]))),
         )
         .subcommand(
@@ -104,7 +116,7 @@ fn main() {
                     )
                     .expect("failed to exec Julia process...");
                 }
-                // if no sub-command, then start the julia process...
+                // if run with `gsn jl run`, then start the julia process using the current directory as the active environment
                 ("run", _sub_matches) => {
                     let julia_executable_string =
                         CString::new("julia").expect("CString::new failed...");
@@ -117,6 +129,7 @@ fn main() {
                     execvp(julia_executable, &[julia_args_julia, julia_args_project])
                         .expect("failed to exec Julia process...");
                 }
+                // if no sub-command, then start the julia process...
                 _ => {
                     let julia_executable_string =
                         CString::new("julia").expect("CString::new failed...");
