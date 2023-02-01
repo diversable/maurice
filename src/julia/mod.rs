@@ -1,3 +1,7 @@
+//
+// Should the Gaston.jl file content be written to the .julia/gaston folder?
+//
+//
 #![allow(dead_code)]
 
 // use jlrs::prelude::*;
