@@ -2,6 +2,7 @@
 
 use std::ffi::{CString, OsString};
 use std::path::PathBuf;
+use std::process;
 
 use clap::{arg, ColorChoice, Command};
 use jlrs::prelude::*;
@@ -39,6 +40,7 @@ fn cli() -> Command {
                 .subcommand(Command::new("run"))
                 // TODO! add argument to Pluto to start on a different port, etc....
                 .subcommand(Command::new("pluto"))
+                // start the default editor / VSCode ?
                 .subcommand(Command::new("edit")),
         )
         .subcommand(
@@ -146,6 +148,29 @@ fn main() {
                     let julia_args_project =
                         CString::new("--project=@.").expect("CString::new failed...");
 
+                    execvp(julia_executable, &[julia_args_julia, julia_args_project])
+                        .expect("failed to exec Julia process...");
+                }
+                ("edit", _sub_matches) => {
+                    let vscode = process::Command::new("sh")
+                        .arg("-c")
+                        .arg("code .")
+                        .current_dir("./")
+                        .output()
+                        .expect("Failed to execute VSCode...");
+
+                    println!("VSCode response: {:?}", vscode);
+
+                    // start Julia repl in the background as well...
+                    let julia_executable_string =
+                        CString::new("julia").expect("CString::new failed...");
+                    let julia_executable = julia_executable_string.as_c_str();
+
+                    let julia_args_julia = CString::new("julia").expect("CString::new failed...");
+                    let julia_args_project =
+                        CString::new("--project=@.").expect("CString::new failed...");
+
+                    // process::Command::new("code")
                     execvp(julia_executable, &[julia_args_julia, julia_args_project])
                         .expect("failed to exec Julia process...");
                 }
