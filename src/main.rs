@@ -13,6 +13,7 @@ use dirs::home_dir;
 mod julia;
 mod pkg;
 
+use julia::write_julia_script_to_disk;
 use pkg::activate::{activate_env_in_current_dir, activate_env_w_name};
 use pkg::add_package::*;
 use pkg::remove_package::*;
@@ -79,18 +80,25 @@ fn main() {
     let mut gaston_path = PathBuf::new();
     gaston_path.push(home_dir);
     gaston_path.push(julia_dir);
+    let gaston_jl_path = &gaston_path;
 
     // Include some custom code defined in <file>.
     // This is safe because the included code doesn't do any strange things.
     unsafe {
-        if gaston_path.exists() {
-            println!("Gaston path exists @: {:?}", gaston_path);
-            julia.include(gaston_path).expect("Could not include file");
-        } else {
+        if gaston_jl_path.exists() {
+            println!("Gaston path exists @: {:?}", gaston_jl_path);
             julia
-                // TODO! Fix this! access to local path is broken...
-                .include("julia/Gaston.jl")
-                .expect("Else path: Could not include file");
+                .include(gaston_jl_path)
+                .expect("Could not include file");
+        } else {
+            // julia
+            // TODO! Fix this! access to local path is broken...
+            // .include("julia/Gaston.jl")
+            // .expect("Else path: Could not include file");
+            write_julia_script_to_disk();
+            julia
+                .include(gaston_jl_path)
+                .expect("Could not include file");
         }
     }
 
