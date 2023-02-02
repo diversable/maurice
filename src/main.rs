@@ -37,20 +37,63 @@ fn cli() -> Command {
                 .about("start the Julia REPL using the project in the current directory")
                 .args_conflicts_with_subcommands(true)
                 // TODO! should I implement a `repl` subcommand as well, which does the same thing as the 'run' command? I'm leaning towards yes...
-                .subcommand(Command::new("run"))
+                .subcommand(
+                    Command::new("run")
+                    .about("runs the Julia REPL in the existing process in the terminal; defaults to the project in the current environment")
+                )
                 // TODO! add argument to Pluto to start on a different port, etc....
-                .subcommand(Command::new("pluto"))
+                .subcommand(
+                    Command::new("pluto")
+                    .about("starts up the Pluto Notebook environment in the browser")
+                )
                 // start the default editor / VSCode ?
-                .subcommand(Command::new("edit")),
+                .subcommand(
+                    Command::new("edit")
+                    .about("Both (a) starts VSCode using the current directory, and (b) starts the Julia REPL in the terminal for interactive use / testing")
+                ),
         )
         .subcommand(
             Command::new("pkg")
-                .about("uses the Julia Pkg manager API")
+                .about("gets the status of installed packages; also has multiple sub-commands to manage packages in your project")
                 .args_conflicts_with_subcommands(true)
-                .subcommand(Command::new("status"))
-                .subcommand(Command::new("add").arg(arg!([PACKAGE_NAME])))
-                .subcommand(Command::new("rm").arg(arg!([PACKAGE_NAME])))
-                .subcommand(Command::new("remove").arg(arg!([PACKAGE_NAME])))
+                // use the `global` flags to operate on the global environment...
+                // .long_flag("global")
+                // .short_flag('g')
+        // )
+
+
+                // SUB-COMMANDS
+
+                // Status
+            .subcommand(
+                Command::new("status")
+                    .about("gets the status of the installed packages")
+                    // .long_flag("global")
+                    // .short_flag('g')
+            )
+
+                // Add Package
+            .subcommand(
+                Command::new("add")
+                    .arg(arg!([PACKAGE_NAME]))
+                    .about("add a package to the current environment: `gsn pkg add [package_name]")
+                    // .long_flag("global")
+                    // .short_flag('g')
+            )
+
+                // Remove Package
+            .subcommand(
+                Command::new("rm")
+                    .arg(arg!([PACKAGE_NAME]))
+                    .visible_alias("remove")
+                    .about("remove a package")
+            )
+
+            // .subcommand(
+            //     Command::new("remove")
+            //         .arg(arg!([PACKAGE_NAME]))
+            // )
+                //
                 //
                 // NB! Because `infer_subcommands` is turned on, above, you can also use "up" as a short form to activate the `update` command.
                 // TODO! This workflow tip about `infer_subcommands` should be noted as an example in the help docs printed on the cmd line.
@@ -59,8 +102,13 @@ fn cli() -> Command {
                 //
                 // TODO! need to have a flag to differentiate between updating the local environment and the global env
                 // Todo! (con'td) Which should be the default? Local env as default, or global env as default?
-                .subcommand(Command::new("update").arg(arg!([PACKAGE_NAME]))),
-        )
+                //
+                // Update Package
+            .subcommand(
+                Command::new("update")
+                    .arg(arg!([PACKAGE_NAME]))
+            )
+        ) // END PKG Sub-command
         .subcommand(
             Command::new("new")
                 .about("creates new environments (scripts), projects (binaries), and packages (libaries)")
@@ -235,8 +283,9 @@ fn main() {
             let pkg_command = sub_matches.subcommand().unwrap_or(("status", sub_matches));
 
             match pkg_command {
-                ("status", _sub_matches) => {
+                ("status", sub_matches) => {
                     status(&mut julia);
+                    println!("sub_matches: {:?}", sub_matches);
                 }
                 ("add", sub_matches) => {
                     let add_one_pkg = sub_matches.get_one::<String>("PACKAGE_NAME");

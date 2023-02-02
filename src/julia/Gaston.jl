@@ -15,14 +15,22 @@ using Pkg
 
 # end
 
+# get the status of the project in the current dir
 function status()
 
     # Pkg.status(; outdated=true, IO=stderr)
     # status = Pkg.status(; IO=String)
+    Pkg.activate(".")
     status = Pkg.status(; IO=stdout)
     # no errors occurred
     return "Ready"
 
+end
+
+function status_global()
+    status = Pkg.status(; IO=stdout)
+    # no errors occurred
+    return "Ready"
 end
 #
 # STATUS METHOD END
