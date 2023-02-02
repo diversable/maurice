@@ -1,11 +1,21 @@
 use jlrs::prelude::*;
 use std::env;
+use std::fs::File;
+use std::io::prelude::*;
+
+// TODO! Create Julia environments' (scripts') `Main.jl` file & write standard content into it...
+fn create_main_jl() -> std::io::Result<()> {
+    let mut jl_main_file = File::create("Main.jl")?;
+    unimplemented!()
+}
 
 pub fn activate_env_in_current_dir(julia: &mut Julia) {
     println!(
         "\nActivating environment {:?}\n",
         env::current_dir().expect("couldn't retrieve current directory")
     );
+
+    // TODO! Call into create_main_jl() fn to create a standard Main.jl file for the env.
 
     let _activate = julia
         .scope(|mut frame| {
@@ -49,6 +59,8 @@ pub fn activate_env_in_current_dir(julia: &mut Julia) {
 
 pub fn activate_env_w_name(julia: &mut Julia, env_name: &str) {
     println!("\nActivating environment \"{}\"\n", &env_name);
+
+    // TODO! Call into create_main_jl() fn to create a standard Main.jl file for the env.
 
     let env_name = env_name.to_string();
     let activate = julia

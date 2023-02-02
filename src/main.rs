@@ -63,7 +63,7 @@ fn cli() -> Command {
         )
         .subcommand(
             Command::new("new")
-                .about("creates new projects, packages, and environments")
+                .about("creates new environments (scripts), projects (binaries), and packages (libaries)")
                 .args_conflicts_with_subcommands(true)
                 .subcommand(Command::new("env").arg(arg!([ENVIRONMENT_NAME]))),
         )
@@ -108,6 +108,31 @@ fn main() {
     let matches = cli().get_matches();
 
     match matches.subcommand() {
+        Some(("new", sub_matches)) => {
+            let new_command = sub_matches
+                .subcommand()
+                // If an argument isn't supplied to `gsn new <nothing>`, then default to creating a new environment
+                .unwrap_or(("env", sub_matches));
+
+            match new_command {
+                // if you get an argument, call env with the arg. Otherwise, activate environment in current directory
+                ("env", sub_matches) => {
+                    if let Some(_) = sub_matches.get_one::<String>("ENVIRONMENT_NAME") {
+                        let activate_env = sub_matches.get_one::<String>("ENVIRONMENT_NAME");
+
+                        activate_env_w_name(
+                            &mut julia,
+                            activate_env.expect("tried and failed to activate environment..."),
+                        );
+                    } else {
+                        activate_env_in_current_dir(&mut julia);
+                    }
+                }
+                _ => {
+                    unreachable!("Unsupported subcommand",)
+                }
+            }
+        }
         Some(("jl", sub_matches)) => {
             let jl_command = sub_matches.subcommand().unwrap_or(("run", sub_matches));
             // .expect("messed up gsn jl command");
@@ -258,31 +283,7 @@ fn main() {
                 }
             }
         }
-        Some(("new", sub_matches)) => {
-            let new_command = sub_matches
-                .subcommand()
-                // If an argument isn't supplied to `gsn new <nothing>`, then default to creating a new environment
-                .unwrap_or(("env", sub_matches));
 
-            match new_command {
-                // if you get an argument, call env with the arg. Otherwise, activate environment in current directory
-                ("env", sub_matches) => {
-                    if let Some(_) = sub_matches.get_one::<String>("ENVIRONMENT_NAME") {
-                        let activate_env = sub_matches.get_one::<String>("ENVIRONMENT_NAME");
-
-                        activate_env_w_name(
-                            &mut julia,
-                            activate_env.expect("tried and failed to activate environment..."),
-                        );
-                    } else {
-                        activate_env_in_current_dir(&mut julia);
-                    }
-                }
-                _ => {
-                    unreachable!("Unsupported subcommand",)
-                }
-            }
-        }
         Some((ext, sub_matches)) => {
             let args = sub_matches
                 .get_many::<OsString>("id")
