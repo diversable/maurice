@@ -139,7 +139,7 @@ fn main() {
 
             match jl_command {
                 ("pluto", _sub_matches) => {
-                    // TODO! Need to check to make sure that Pluto is installed first, or just install it in the environment...
+                    // TODO! Need to check to make sure that Pluto is installed in the global env. first, or just install it in the environment...
                     //
                     // Run Pluto via `julia -E 'using Pluto; Pluto.run()'` command
                     //
@@ -174,6 +174,7 @@ fn main() {
                         .expect("failed to exec Julia process...");
                 }
                 ("edit", _sub_matches) => {
+                    // TODO! Introduce checks to ensure that VSCode is installed; if not, ask the user if they want to install it...
                     // start VSCode...
                     let _launch_vscode = if cfg!(target_os = "windows") {
                         // TODO! Test this on Windows!
