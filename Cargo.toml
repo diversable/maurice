@@ -14,7 +14,7 @@ clap = { version = "4.1.4", features = ["derive", "cargo"] }
 # cluFlock = "1.2.7"
 # console = "0.15.5"
 # ctrlc = "3.2.4"
-# dirs = "4.0.0"
+dirs = "4.0.0"
 
 jlrs = { version = "0.17.0", features = ["sync-rt"] }
 

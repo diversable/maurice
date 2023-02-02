@@ -1,5 +1,5 @@
 //
-// Should the Gaston.jl file content be written to the .julia/gaston folder?
+// The Gaston.jl file contents should be written to the <home_dir>.julia/gaston/Gaston.jl file/folder
 //
 //
 #![allow(dead_code)]
