@@ -1,5 +1,5 @@
-This software is pre-Alpha.
+This software is a prototype.
 
 Currently, Julia language must already be installed and on the user's path for this software to function properly.
 
-Also, the project must be run with `cargo run -- <cmd>` at the moment (creating a build and running the binary from the `/target` directory will fail).
+Also, the user presently has to manually copy the "./src/julia/Gaston.jl" file to `$HOME/.julia/gaston/Gaston.jl` for the binary to function.
