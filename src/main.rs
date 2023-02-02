@@ -41,11 +41,14 @@ fn cli() -> Command {
                 .subcommand(
                     Command::new("run")
                     .about("runs the Julia REPL in the existing process in the terminal; defaults to the project in the current environment")
+                    .visible_alias("repl")
                 )
                 // TODO! add argument to Pluto to start on a different port, etc....
                 .subcommand(
                     Command::new("pluto")
                     .about("starts up the Pluto Notebook environment in the browser")
+                    .visible_alias("notebook")
+                    .visible_alias("nb")
                 )
                 // start the default editor / VSCode ?
                 .subcommand(
@@ -207,7 +210,7 @@ fn main() {
                         julia_executable,
                         &[julia_args_julia, julia_args_execute, julia_args_pluto],
                     )
-                    .expect("failed to exec Julia process...");
+                    .expect("failed to start Julia -> Pluto process...");
                 }
                 // if run with `gsn jl run`, then start the julia process using the current directory as the active environment
                 ("run", _sub_matches) => {
