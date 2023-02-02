@@ -12,6 +12,7 @@ use nix::unistd::execvp;
 use dirs::home_dir;
 
 mod julia;
+mod new;
 mod pkg;
 
 use julia::write_julia_script_to_disk;

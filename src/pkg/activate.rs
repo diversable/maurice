@@ -5,8 +5,14 @@ use std::io::prelude::*;
 
 // TODO! Create Julia environments' (scripts') `Main.jl` file & write standard content into it...
 fn create_main_jl() -> std::io::Result<()> {
+    // TODO!
+    // Get current directory
+
+    // write `Main.jl` to current dir
     let mut jl_main_file = File::create("Main.jl")?;
-    unimplemented!()
+
+    // ...
+    unimplemented!();
 }
 
 pub fn activate_env_in_current_dir(julia: &mut Julia) {
