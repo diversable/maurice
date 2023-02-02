@@ -21,4 +21,4 @@ Currently, the CLI commands looks something like this:
 	- remove | rm [package_name]: remove package
 	- update [?package_name]: update all packages (if package_name is not provided), or update specific package in global environment
 
-Using partial commands also works with this CLI tool, so using a command like `gsn p up` will work to update all packages, or `gsn j ed` will start up VSCode and start Julia in the terminal for you.
+Using partial commands also works with this CLI tool, so using a command like `gsn p up` will work to update all packages just the same as the command `gsn pkg update`; `gsn j ed` will work the same as `gsn jl edit` and will start up VSCode as well as start the Julia process in the terminal for you.
