@@ -95,7 +95,10 @@ fn main() {
             // TODO! Fix this! access to local path is broken...
             // .include("julia/Gaston.jl")
             // .expect("Else path: Could not include file");
-            write_julia_script_to_disk();
+            println!("Gaston.jl file not found. Writing Gaston.jl file to `$HOME/.julia/gaston/Gaston.jl`", );
+
+            write_julia_script_to_disk()
+                .expect("couldn't write Gaston.jl file to $HOME/.julia/gaston/Gaston.jl");
             julia
                 .include(gaston_jl_path)
                 .expect("Could not include file");
