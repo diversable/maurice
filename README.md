@@ -20,3 +20,5 @@ Currently, the CLI commands looks something like this:
 	- add [package_name]: add a package from the Julia registry
 	- remove | rm [package_name]: remove package
 	- update [?package_name]: update all packages (if package_name is not provided), or update specific package in global environment
+
+Using partial commands also works with this CLI tool, so using a command like `gsn p up` will work to update all packages, or `gsn j ed` will start up VSCode and start Julia in the terminal for you.
