@@ -6,7 +6,7 @@ use std::process;
 
 use clap::{arg, ColorChoice, Command};
 use jlrs::prelude::*;
-// NB: The `nix` crate is Unix-only! Find a Windows-compatible way to provide the same functionality!
+// TODO! The `nix` crate is Unix-only! Find a Windows-compatible way to provide the same functionality!
 use nix::unistd::execvp;
 
 use dirs::home_dir;
