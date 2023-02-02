@@ -88,19 +88,16 @@ fn main() {
     // This is safe because the included code doesn't do any strange things.
     unsafe {
         if gaston_jl_path.exists() {
-            println!("Gaston path exists @: {:?}", gaston_jl_path);
+            // println!("Gaston path exists @: {:?}", gaston_jl_path);
             julia
                 .include(gaston_jl_path)
                 .expect("Could not include file");
         } else {
-            // julia
-            // TODO! Fix this! access to local path is broken...
-            // .include("julia/Gaston.jl")
-            // .expect("Else path: Could not include file");
             println!("Gaston.jl file not found. Writing Gaston.jl file to `$HOME/.julia/gaston/Gaston.jl`", );
 
             write_julia_script_to_disk()
                 .expect("couldn't write Gaston.jl file to $HOME/.julia/gaston/Gaston.jl");
+
             julia
                 .include(gaston_jl_path)
                 .expect("Could not include file");
@@ -152,14 +149,24 @@ fn main() {
                         .expect("failed to exec Julia process...");
                 }
                 ("edit", _sub_matches) => {
-                    let vscode = process::Command::new("sh")
-                        .arg("-c")
-                        .arg("code .")
-                        .current_dir("./")
-                        .output()
-                        .expect("Failed to execute VSCode...");
-
-                    println!("VSCode response: {:?}", vscode);
+                    // start VSCode...
+                    let _launch_vscode = if cfg!(target_os = "windows") {
+                        // TODO! Test this on Windows!
+                        process::Command::new("cmd")
+                            .args(["/C", "code", "./"])
+                            // .output()
+                            .spawn()
+                            .expect("failed to launch VSCode");
+                    } else {
+                        // Launch VSCode in $PWD
+                        process::Command::new("sh")
+                            .current_dir("./")
+                            .arg("-c")
+                            .arg("code .")
+                            // .output()
+                            .spawn()
+                            .expect("Failed to execute VSCode...");
+                    };
 
                     // start Julia repl in the background as well...
                     let julia_executable_string =

@@ -114,8 +114,13 @@ end
 
 function activate_environment(project_env_name::String)
     Pkg.activate(project_env_name)
-    Pkg.add("Documenter")
-    return "New project created: $project_env_name"
+    try
+        Pkg.add("Test")
+        Pkg.add("Documenter")
+        return "New project created: $project_env_name"
+    catch
+        return "Could not add foundational packages for your project. Please try again when you're connected to the network..."
+    end
 end
 
 function make_project_in_current_dir()
