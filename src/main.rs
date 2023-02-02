@@ -77,21 +77,19 @@ fn main() {
     let home_dir = home_dir().expect("Couldn't find the user's home directory");
     let julia_dir = PathBuf::from(".julia/gaston/Gaston.jl");
     let mut gaston_path = PathBuf::new();
-    // gaston_path.push(home_dir);
+    gaston_path.push(home_dir);
     gaston_path.push(julia_dir);
 
     // Include some custom code defined in <file>.
     // This is safe because the included code doesn't do any strange things.
     unsafe {
-        // let path = PathBuf::from("/home/danamantei/.julia/gaston/Gaston.jl");
-
         if gaston_path.exists() {
             println!("Gaston path exists @: {:?}", gaston_path);
             julia.include(gaston_path).expect("Could not include file");
         } else {
             julia
-                // .include("/home/danamantei/.julia/gaston/Gaston.jl")
-                .include("./src/julia/Gaston.jl")
+                // TODO! Fix this! access to local path is broken...
+                .include("julia/Gaston.jl")
                 .expect("Else path: Could not include file");
         }
     }
