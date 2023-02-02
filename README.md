@@ -18,5 +18,5 @@ Currently, the CLI commands looks something like this:
   - pkg: get status of packages
 	- status: get status of packages
 	- add [package_name]: add a package from the Julia registry
-	- remove [package_name]: remove package
+	- remove | rm [package_name]: remove package
 	- update [?package_name]: update all packages (if package_name is not provided), or update specific package in global environment
