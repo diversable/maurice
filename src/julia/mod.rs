@@ -6,7 +6,7 @@
 
 // use jlrs::prelude::*;
 use dirs::home_dir;
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::prelude::*;
 use std::io::{Error, Write};
 use std::path::PathBuf;
@@ -15,13 +15,22 @@ use std::path::PathBuf;
 pub fn write_julia_script_to_disk() -> std::io::Result<()> {
     // unimplemented!();
     let home_dir = home_dir().expect("Couldn't find the user's home directory");
-    let julia_dir = PathBuf::from(".julia/gaston/Gaston.jl");
-    let mut gaston_path = PathBuf::new();
-    gaston_path.push(home_dir);
-    gaston_path.push(julia_dir);
-    let gaston_jl_path = &gaston_path;
+    let gaston_dir = PathBuf::from(".julia/gaston/");
 
-    let mut gaston_jl_file = File::create(gaston_jl_path)?;
+    let mut gaston_folder = PathBuf::new();
+    gaston_folder.push(&home_dir);
+    gaston_folder.push(&gaston_dir);
+
+    let julia_file_path = PathBuf::from(".julia/gaston/Gaston.jl");
+    let mut gaston_file_path = PathBuf::new();
+    gaston_file_path.push(&home_dir);
+    gaston_file_path.push(&julia_file_path);
+
+    let _dotjulia_gaston_dir =
+        fs::create_dir(gaston_folder).expect("Couldn't create $HOME/.julia/gaston/ directory");
+
+    // create Gaston.jl file in `$HOME/.julia/gaston/`
+    let mut gaston_jl_file = File::create(gaston_file_path)?;
 
     // let gaston_jl = (JULIA_FILE_CONTENTS);
     write!(gaston_jl_file, "{}", JULIA_FILE_CONTENTS)
