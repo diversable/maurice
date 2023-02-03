@@ -42,6 +42,7 @@ module Gaston
 module Jl_Command
 using Pkg
 
+# Install Pluto Notebooks in global environment
 function install_pluto_nb()
 
     # Activate global scope
@@ -55,13 +56,23 @@ function install_pluto_nb()
         Pkg.add("Pluto")
     end
 
-    return "Pluto notebooks is up to date"
+    return "Pluto Notebooks is up to date"
 end
 
 end # jl_command
 
 module PkgAPI
 using Pkg
+
+# Activate global scope environment
+function activate_global_scope_environment()
+    Pkg.activate()
+end
+
+# Activate local scope environment
+function activate_local_scope_environment()
+    Pkg.activate(".")
+end
 
 #
 # STATUS METHOD BEGIN
@@ -81,8 +92,13 @@ function status()
     # Pkg.status(; outdated=true, IO=stderr)
     # status = Pkg.status(; IO=String)
 
-    # Activate local scope environment
-    Pkg.activate(".")
+    if isfile("./Project.toml")
+        activate_local_scope_environment()
+    else
+        activate_global_scope_environment()
+    end
+
+
     status = Pkg.status(; IO=stdout)
     # no errors occurred
     return "Ready"
@@ -90,8 +106,9 @@ function status()
 end
 
 function status_global()
-    # Activate global scope
+    # Activate global scope env
     Pkg.activate()
+
     status = Pkg.status(; IO=stdout)
     # no errors occurred
     return "Ready"

@@ -12,7 +12,7 @@ Rust language must be installed to compile this tool; Rust can be installed usin
 
 For non-Rust users: after cloning this repo from Github, the `gsn` CLI tool can be compiled by typing `cargo build --release` onto the  command line in the project's root directory, and then copying the `gsn` binary from the `(project root)/target/release/` folder into a directory on your $PATH (eg. `/usr/bin`).
 
-On Linux or Windows WSL, if you enter the `(project root)/target/release` directory, then you can use the command `sudo cp ./gsn /usr/bin/` to add the binary to your $PATH. Then you're ready to start using the gsn (Gaston) CLI tool.
+On Linux or Windows WSL, if you enter the `(project root)/target/release` directory, then you can use the command `cp ./gsn ~/bin/` to add the binary to your $PATH (you may need to create the ~/bin/ directory if it doesn't exist). Then you're ready to start using the gsn (Gaston) CLI tool.
 
 
 Once the codebase is more fully-formed, proper builds will be available for download.
