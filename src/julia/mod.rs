@@ -180,8 +180,13 @@ function remove_package(pkgname::String)
     return "$pkgname has been removed"
 end
 
+end # module PkgAPI
 
-function activate_environment(project_env_name::String)
+# New script / environment, app project, or package (using PkgTemplates)
+module New
+using Pkg
+
+function activate_env_in_target_dir(project_env_name::String)
     Pkg.activate(project_env_name)
     try
         Pkg.add("Test")
@@ -192,7 +197,7 @@ function activate_environment(project_env_name::String)
     end
 end
 
-function make_project_in_current_dir()
+function make_env_in_current_dir()
     # Activate project in current dir..
     Pkg.activate(".")
 
@@ -204,6 +209,7 @@ function make_project_in_current_dir()
 end
 
 function make_project_in_defined_directory(directory::String)
+    install_pkgtemplates()
     Pkg.activate(".")
 
     # Must add a package in order to generate Project.toml file
@@ -211,17 +217,19 @@ function make_project_in_defined_directory(directory::String)
 
     Pkg.add("Documenter")
 end
-# dbg!
-# status()
-# update(["CSV", "Makie"])
 
-# debug!
-# packages = ["CSV", "Makie"]
-# println(packages)
-# update(packages)
+function install_pkgtemplates()
+    Pkg.activate()
+    try
+        Pkg.update("PkgTemplates")
+        return "PkgTemplates is up to date"
+    catch
+        Pkg.add("PkgTemplates")
+        return "Added PkgTemplates"
+    end
+end
 
-
-end # module PkgAPI
+end # module New
 
 end # module Gaston
 "###;

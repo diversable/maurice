@@ -2,7 +2,7 @@ use jlrs::prelude::*;
 
 /// if no arguments are supplied, update all packages by default....
 pub fn update_all_packages(julia: &mut Julia) {
-    println!("\nUpdating all packages installed...\n");
+    println!("\nUpdating packages...\n");
 
     let update = julia
         .scope(|mut frame| {

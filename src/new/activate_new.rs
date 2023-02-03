@@ -1,18 +1,72 @@
 use jlrs::prelude::*;
-use std::env;
-use std::fs::File;
+use std::env::{self, current_dir};
+use std::fs::{self, DirBuilder, File};
 use std::io::prelude::*;
+use std::path;
 
-// TODO! Create Julia environments' (scripts') `Main.jl` file & write standard content into it...
-fn create_main_jl() -> std::io::Result<()> {
-    // TODO!
-    // Get current directory
+const JL_SCRIPT_CONTENTS: &str = r###"module Main
 
-    // write `Main.jl` to current dir
-    let mut jl_main_file = File::create("Main.jl")?;
+function main()
+    println("Hello, world!")
+end
 
-    // ...
-    unimplemented!();
+main()
+
+end # module Main
+"###;
+
+const JL_RUNTESTS_CONTENTS: &str = r###"module Test
+
+# write tests here...
+
+end # module Test
+"###;
+
+// TODO! Change this function to handle setting up files in a target directory
+fn create_default_files_for_env() -> std::io::Result<()> {
+    // let mut env_path = path::PathBuf::new();
+    // env_path.push(env_name);
+
+    // if env_path == current_dir()? {
+    //     let current_dir = env::current_dir()?;
+    // } else {
+    //     let current_dir = env_path;
+    // }
+
+    let current_dir = env::current_dir()?;
+
+    // Create ./src directory
+    let mut src_path = path::PathBuf::new();
+    src_path.push(&current_dir);
+    src_path.push("src/");
+
+    DirBuilder::new()
+        .recursive(true)
+        .create(src_path)
+        .expect("Could not create `/src/` directory");
+
+    // write `Main.jl` to current_dir/src/Main.jl
+    let mut jl_main_file =
+        File::create("./src/Main.jl").expect("could not create ./src/Main.jl file");
+
+    // write JL_SCRIPT_CONTENTS to the julia main file
+    write!(jl_main_file, "{}", JL_SCRIPT_CONTENTS)?;
+
+    let mut tests_path = path::PathBuf::new();
+    tests_path.push(&current_dir);
+    tests_path.push("./tests/");
+
+    DirBuilder::new()
+        .recursive(true)
+        .create(tests_path)
+        .expect("Could not create `/tests/` directory");
+
+    let mut jl_runtests_file =
+        File::create("./tests/run_tests.jl").expect("could not create `./tests/run_tests.jl` file");
+
+    write!(jl_runtests_file, "{}", JL_RUNTESTS_CONTENTS)?;
+
+    Ok(())
 }
 
 pub fn activate_env_in_current_dir(julia: &mut Julia) {
@@ -20,8 +74,6 @@ pub fn activate_env_in_current_dir(julia: &mut Julia) {
         "\nActivating environment {:?}\n",
         env::current_dir().expect("couldn't retrieve current directory")
     );
-
-    // TODO! Call into create_main_jl() fn to create a standard Main.jl file for the env.
 
     let _activate = julia
         .scope(|mut frame| {
@@ -31,9 +83,9 @@ pub fn activate_env_in_current_dir(julia: &mut Julia) {
                 jl_module_main
                     // the submodule doesn't have to be rooted because it's never reloaded.
                     .submodule(&mut frame, "Gaston")?
-                    .submodule(&mut frame, "PkgAPI")?
+                    .submodule(&mut frame, "New")?
                     // the same holds true for the function: the module is never reloaded so it's globally rooted
-                    .function(&mut frame, "make_project_in_current_dir")?
+                    .function(&mut frame, "make_env_in_current_dir")?
                     //
                     // CALLING A FUNCTION
                     //
@@ -57,6 +109,8 @@ pub fn activate_env_in_current_dir(julia: &mut Julia) {
         })
         .expect("Result is an error");
 
+    create_default_files_for_env().expect("Couldn't write default files for the environment");
+
     println!(
         "\nActivated new project environment in {:?}.\nYou're ready to add packages!",
         env::current_dir().expect("couldn't retrieve current directory")
@@ -65,8 +119,6 @@ pub fn activate_env_in_current_dir(julia: &mut Julia) {
 
 pub fn activate_env_w_name(julia: &mut Julia, env_name: &str) {
     println!("\nActivating environment \"{}\"\n", &env_name);
-
-    // TODO! Call into create_main_jl() fn to create a standard Main.jl file for the env.
 
     let env_name = env_name.to_string();
     let activate = julia
@@ -79,9 +131,9 @@ pub fn activate_env_w_name(julia: &mut Julia, env_name: &str) {
                 jl_module_main
                     // the submodule doesn't have to be rooted because it's never reloaded.
                     .submodule(&mut frame, "Gaston")?
-                    .submodule(&mut frame, "PkgAPI")?
+                    .submodule(&mut frame, "New")?
                     // the same holds true for the function: the module is never reloaded so it's globally rooted
-                    .function(&mut frame, "activate_environment")?
+                    .function(&mut frame, "activate_env_in_target_dir")?
                     //
                     // CALLING A FUNCTION
                     //
@@ -104,6 +156,9 @@ pub fn activate_env_w_name(julia: &mut Julia, env_name: &str) {
             }
         })
         .expect("Result is an error");
+
+    // TODO! Change the create_default.... fn to handle a target directory for this funcion!
+    // create_default_files_for_env().expect("Couldn't write default files for the environment");
 
     println!(
         "\nActivated new project environment\n{:?}",
