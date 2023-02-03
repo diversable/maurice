@@ -74,6 +74,14 @@ function activate_local_scope_environment()
     Pkg.activate(".")
 end
 
+function local_env_else_global_env()
+    if isfile("./Project.toml")
+        activate_local_scope_environment()
+    else
+        activate_global_scope_environment()
+    end
+end
+
 #
 # STATUS METHOD BEGIN
 #
@@ -92,12 +100,8 @@ function status()
     # Pkg.status(; outdated=true, IO=stderr)
     # status = Pkg.status(; IO=String)
 
-    if isfile("./Project.toml")
-        activate_local_scope_environment()
-    else
-        activate_global_scope_environment()
-    end
-
+    # Try to activate locally scoped environment. If not found, fall back to global env.
+    local_env_else_global_env()
 
     status = Pkg.status(; IO=stdout)
     # no errors occurred
@@ -122,8 +126,8 @@ end
 #
 # update all packages
 function update()
-    # Activate local scope environment
-    Pkg.activate(".")
+    # Try to activate locally scoped environment. If not found, fall back to global env.
+    local_env_else_global_env()
 
     update = Pkg.update()
     return "Success"
@@ -144,8 +148,8 @@ end
 
 # update multiple packages:
 function update(pkgnames::Vector{String})
-    # Activate local scope environment
-    Pkg.activate(".")
+    # Try to activate locally scoped environment. If not found, fall back to global env.
+    local_env_else_global_env()
 
     update = Pkg.update(pkgnames)
     return "Success"
@@ -155,8 +159,8 @@ end
 #
 
 function add_package(pkgname::String)
-    # Activate local scope environment
-    Pkg.activate(".")
+    # Try to activate locally scoped environment. If not found, fall back to global env.
+    local_env_else_global_env()
 
     try
         Pkg.add(pkgname)
@@ -169,8 +173,8 @@ end
 
 
 function remove_package(pkgname::String)
-    # Activate local scope environment
-    Pkg.activate(".")
+    # Try to activate locally scoped environment. If not found, fall back to global env.
+    local_env_else_global_env()
 
     Pkg.rm(pkgname)
     return "$pkgname has been removed"
