@@ -4,18 +4,10 @@ This software is under development and is currently in the prototype (pre-Alpha)
 
 _Pre-Requisites_:
 
-Currently, Julia language must already be installed and on the user's path for this software to function properly.
+Currently, the Julia language must already be installed and on the user's path for this software to function properly.
 
 FYI: the easiest way to install Julia is to use [the `Juliaup` command line tool](https://github.com/JuliaLang/juliaup).
 
-Rust language must be installed to compile this tool; Rust can be installed using [the rustup tool](https://rustup.rs/).
-
-For non-Rust users: after cloning this repo from Github, the `gsn` CLI tool can be compiled by typing `cargo build --release` onto the  command line in the project's root directory, and then copying the `gsn` binary from the `(project root)/target/release/` folder into a directory on your $PATH (eg. `/usr/bin`).
-
-On Linux or Windows WSL, if you enter the `(project root)/target/release` directory, then you can use the command `cp ./gsn ~/bin/` to add the binary to your $PATH (you may need to create the ~/bin/ directory if it doesn't exist). Then you're ready to start using the gsn (Gaston) CLI tool.
-
-
-Once the codebase is more fully-formed, proper builds will be available for download.
 
 _Windows Compatibility_:
 
@@ -58,3 +50,14 @@ Some helpful workflow shortcuts with the `gsn` (Gaston) CLI are:
 
 - Start a Pluto Notebook:
   `gsn jl pluto` or `gsn j p`
+  
+  
+---
+
+Building from source:
+
+Rust language must be installed to compile this tool; Rust can be installed using [the rustup tool](https://rustup.rs/).
+
+For non-Rust users: after cloning this repo from Github, the `gsn` CLI tool can be compiled by typing `cargo build --release` onto the  command line in the project's root directory, and then copying the `gsn` binary from the `(project root)/target/release/` folder into a directory on your $PATH (eg. `/usr/bin`).
+
+On Linux or Windows WSL, if you enter the `(project root)/target/release` directory, then you can use the command `cp ./gsn ~/bin/` to add the binary to your $PATH (you may need to create the ~/bin/ directory if it doesn't exist). Then you're ready to start using the gsn (Gaston) CLI tool.
