@@ -7,7 +7,7 @@ The CLI is currently not fully functional / tested on Windows; it works well on 
 
 However, the `gsn` (Gaston) CLI does have some useful functionality already - so feel free to give it a try and give feedback on the commands / workflow!
 
-Currently, the CLI commands looks something like this:
+Currently, the CLI looks something like this:
 - gsn
   - new
     - env [?env_name] 			(description: create a new environment in the current directory (default) or with the specified env name)
@@ -22,3 +22,19 @@ Currently, the CLI commands looks something like this:
 	- update [?package_name]	(description: update all packages (if package_name is not provided), or update specific package in local environment)
 
 Using partial commands also works with this CLI tool, so using a command like `gsn p up` will work the same as the command `gsn pkg update` and will update all packages; `gsn j ed` will work the same as `gsn jl edit` and will start up VSCode as well as start the Julia process in the terminal for you.
+
+---
+
+Some helpful workflow shortcuts with the `gsn` (Gaston) CLI are:
+
+- create an environment in the current working directory: `gsn new env` or `gsn n env`
+
+- Get the status of packages in your environment:
+`gsn p st`
+
+- Install a package in the local environment:
+  `gsn p i <package_name>` or `gsn p add <package_name>`
+  (ie. gaston package install | add package)
+
+- Start VSCode in the current directory and start the julia repl for interactive work on the side: `gsn jl edit` or `gsn jl ed` (NB: currently, VSCode must already be installed for this command to work)
+
