@@ -1,3 +1,5 @@
+[![Rust](https://github.com/diversable/gaston/actions/workflows/rust.yaml/badge.svg)](https://github.com/diversable/gaston/actions/workflows/rust.yaml)
+
 WARNING:
 
 This software is under development and is currently in the prototype (pre-Alpha) phase.
