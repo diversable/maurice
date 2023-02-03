@@ -1,7 +1,7 @@
 use jlrs::prelude::*;
 
 /// install Pluto Notebooks in the user's global environment
-pub fn install_pluto(julia: &mut Julia) {
+pub fn install_or_update_pluto(julia: &mut Julia) {
     println!("\nEnsuring you've got the latest Pluto Notebooks environment...\n",);
 
     let status = julia
@@ -16,7 +16,7 @@ pub fn install_pluto(julia: &mut Julia) {
                     .submodule(&mut frame, "Gaston")?
                     .submodule(&mut frame, "Jl_Command")?
                     // the same holds true for the function: the module is never reloaded so it's globally rooted
-                    .function(&mut frame, "install_pluto_nb")?
+                    .function(&mut frame, "install_or_update_pluto_nb")?
                     //
                     // CALLING A FUNCTION
                     // use the `call0(&mut frame)` function to call a fn with no args

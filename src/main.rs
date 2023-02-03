@@ -16,9 +16,9 @@ mod julia;
 mod new;
 mod pkg;
 
-use jl_command::pluto_nb::install_pluto;
+use jl_command::pluto_nb::install_or_update_pluto;
 use julia::write_julia_script_to_disk;
-use new::activate_new::{activate_env_in_current_dir, activate_env_w_name};
+use new::script::{activate_env_in_current_dir, activate_env_w_name};
 use pkg::add_package::*;
 use pkg::remove_package::*;
 use pkg::status::*;
@@ -206,7 +206,7 @@ fn main() {
                     //
                     //
 
-                    install_pluto(&mut julia);
+                    install_or_update_pluto(&mut julia);
 
                     let _output = process::Command::new("julia")
                         .arg("-E")

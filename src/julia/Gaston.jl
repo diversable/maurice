@@ -4,7 +4,7 @@ module Jl_Command
 using Pkg
 
 # Install Pluto Notebooks in global environment
-function install_pluto_nb()
+function install_or_update_pluto_nb()
 
     # Activate global scope
     Pkg.activate()
