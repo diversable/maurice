@@ -1,11 +1,11 @@
-This software is a prototype.
+This software is in the prototype (pre-Alpha) phase.
 
 Currently, Julia language must already be installed and on the user's path for this software to function properly.
 
-The cli is currently not fully functional / tested on Windows; it works well on Linux though (and presumably Windows' WSL as well as MacOS, too).
+The CLI is currently not fully functional / tested on Windows; it works well on Linux though (and presumably Windows' WSL as well as MacOS, too).
 
 
-Otherwise, the cli has some useful functionality already - feel free to give it a try and give feedback on the API!
+However, the `gsn` (Gaston) CLI does have some useful functionality already - so feel free to give it a try and give feedback on the commands / workflow!
 
 Currently, the CLI commands looks something like this:
 - gsn
