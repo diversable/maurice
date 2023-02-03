@@ -73,7 +73,10 @@ fn cli() -> Command {
                 // Status
             .subcommand(
                 Command::new("status")
+                    .visible_alias("list")
+                    .visible_alias("ls")
                     .about("gets the status of the installed packages; defaults to current directory's environment, if it exists. Otherwise, reports global env package status")
+
                     // .long_flag("global")
                     // .short_flag('g')
             )
@@ -93,6 +96,7 @@ fn cli() -> Command {
                 Command::new("rm")
                     .arg(arg!([PACKAGE_NAME]))
                     .visible_alias("remove")
+                    .visible_alias("delete")
                     .about("remove a package; defaults to local environment")
             )
                 //
