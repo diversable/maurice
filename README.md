@@ -1,11 +1,29 @@
-This software is in the prototype (pre-Alpha) phase.
+WARNING:
+
+This software is under development and is currently in the prototype (pre-Alpha) phase.
+
+_Pre-Requisites_:
 
 Currently, Julia language must already be installed and on the user's path for this software to function properly.
 
+FYI: the easiest way to install Julia is to use [the `Juliaup` command line tool](https://github.com/JuliaLang/juliaup).
+
+Rust language must be installed to compile this tool; Rust can be installed using [the rustup tool](https://rustup.rs/).
+
+For non-Rust users: after cloning this repo from Github, the `gsn` CLI tool can be compiled by typing `cargo build --release` onto the  command line in the project's root directory, and then copying the `gsn` binary from the `(project root)/target/release/` folder into a directory on your $PATH (eg. `/usr/bin`).
+
+On Linux or Windows WSL, if you enter the `(project root)/target/release` directory, then you can use the command `sudo cp ./gsn /usr/bin/` to add the binary to your $PATH. Then you're ready to start using the gsn (Gaston) CLI tool.
+
+
+Once the codebase is more fully-formed, proper builds will be available for download.
+
+_Windows Compatibility_:
+
 The CLI is currently not fully functional / tested on Windows; it works well on Linux though (and presumably Windows' WSL as well as MacOS, too).
 
+---
 
-However, the `gsn` (Gaston) CLI does have some useful functionality already - so feel free to give it a try and give feedback on the commands / workflow!
+The `gsn` (Gaston) CLI does have some useful functionality already - so feel free to give it a try and give feedback on the commands / workflow!
 
 Currently, the CLI looks something like this:
 - gsn
