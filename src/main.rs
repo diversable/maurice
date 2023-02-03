@@ -11,10 +11,12 @@ use nix::unistd::execvp;
 
 use dirs::home_dir;
 
+mod jl_command;
 mod julia;
 mod new;
 mod pkg;
 
+use jl_command::pluto_nb::install_pluto;
 use julia::write_julia_script_to_disk;
 use pkg::activate::{activate_env_in_current_dir, activate_env_w_name};
 use pkg::add_package::*;
@@ -58,7 +60,7 @@ fn cli() -> Command {
         )
         .subcommand(
             Command::new("pkg")
-                .about("gets the status of installed packages; also has multiple sub-commands to manage packages in your project")
+                .about("gets the status of installed packages; sub-commands are available to manage packages in your project")
                 .args_conflicts_with_subcommands(true)
                 // use the `global` flags to operate on the global environment...
                 // .long_flag("global")
@@ -71,7 +73,7 @@ fn cli() -> Command {
                 // Status
             .subcommand(
                 Command::new("status")
-                    .about("gets the status of the installed packages")
+                    .about("gets the status of the installed packages; defaults to local environment")
                     // .long_flag("global")
                     // .short_flag('g')
             )
@@ -80,7 +82,8 @@ fn cli() -> Command {
             .subcommand(
                 Command::new("add")
                     .arg(arg!([PACKAGE_NAME]))
-                    .about("add a package to the current environment: `gsn pkg add [package_name]")
+                    .visible_alias("install")
+                    .about("add a package to the local environment: eg. `gsn pkg add [package_name]` ")
                     // .long_flag("global")
                     // .short_flag('g')
             )
@@ -90,13 +93,8 @@ fn cli() -> Command {
                 Command::new("rm")
                     .arg(arg!([PACKAGE_NAME]))
                     .visible_alias("remove")
-                    .about("remove a package")
+                    .about("remove a package; defaults to local environment")
             )
-
-            // .subcommand(
-            //     Command::new("remove")
-            //         .arg(arg!([PACKAGE_NAME]))
-            // )
                 //
                 //
                 // NB! Because `infer_subcommands` is turned on, above, you can also use "up" as a short form to activate the `update` command.
@@ -111,13 +109,20 @@ fn cli() -> Command {
             .subcommand(
                 Command::new("update")
                     .arg(arg!([PACKAGE_NAME]))
+                    .about("updates all packages, or updates a single package if a package_name is supplied; defaults to working on local environment. Eg. `gsn pkg update` or `gsn p up CSV`")
             )
         ) // END PKG Sub-command
         .subcommand(
             Command::new("new")
                 .about("creates new environments (scripts), projects (binaries), and packages (libaries)")
                 .args_conflicts_with_subcommands(true)
-                .subcommand(Command::new("env").arg(arg!([ENVIRONMENT_NAME]))),
+                .arg_required_else_help(true)
+                .subcommand(
+                    Command::new("env")
+                        .arg(arg!([PATH_FOR_NEW_ENV]))
+                        .about("create a new Julia environment in the current directory (default), or add a path to create an environment in a different directory")
+                        .visible_alias("environment")
+                )
         )
 }
 
@@ -169,8 +174,8 @@ fn main() {
             match new_command {
                 // if you get an argument, call env with the arg. Otherwise, activate environment in current directory
                 ("env", sub_matches) => {
-                    if let Some(_) = sub_matches.get_one::<String>("ENVIRONMENT_NAME") {
-                        let activate_env = sub_matches.get_one::<String>("ENVIRONMENT_NAME");
+                    if let Some(_) = sub_matches.get_one::<String>("PATH_FOR_NEW_ENV") {
+                        let activate_env = sub_matches.get_one::<String>("PATH_FOR_NEW_ENV");
 
                         activate_env_w_name(
                             &mut julia,
@@ -196,22 +201,67 @@ fn main() {
                     // Run Pluto via `julia -E 'using Pluto; Pluto.run()'` command
                     //
                     //
-                    let julia_executable_string =
-                        CString::new("julia").expect("CString::new failed...");
-                    let julia_executable = julia_executable_string.as_c_str();
 
-                    let julia_args_julia = CString::new("julia").expect("CString::new failed...");
+                    install_pluto(&mut julia);
 
-                    let julia_args_execute = CString::new("-E").expect("CString::new failed...");
-                    let julia_args_pluto =
-                        CString::new("using Pluto; Pluto.run()").expect("CString::new failed...");
+                    let _output = process::Command::new("julia")
+                        .arg("-E")
+                        .arg("using Pluto; Pluto.run()")
+                        .spawn()
+                        .expect("Could not run Julia -> Pluto notebook");
 
-                    execvp(
-                        julia_executable,
-                        &[julia_args_julia, julia_args_execute, julia_args_pluto],
-                    )
-                    .expect("failed to start Julia -> Pluto process...");
+                    // if let Some(_) = output.stdout {
+                    //     process::Command::new("julia")
+                    //         .arg("-E")
+                    //         .arg("using Pluto; Pluto.run()")
+                    //         .spawn()
+                    //         .expect("Could not run Julia -> Pluto notebook");
+                    // };
                 }
+
+                // };
+
+                //
+                // execv[p] implementation of Pluto run command
+                //
+                // let julia_executable_string =
+                //     CString::new("julia").expect("CString::new failed...");
+                // let julia_executable = julia_executable_string.as_c_str();
+
+                // let julia_args_julia = CString::new("julia").expect("CString::new failed...");
+
+                // let julia_args_execute = CString::new("-E").expect("CString::new failed...");
+
+                // let julia_args_run_pluto =
+                //     CString::new("using Pluto; Pluto.run()").expect("CString::new failed...");
+
+                // let julia_args_install_and_run_pluto =
+                //     CString::new("using Pkg; Pkg.add(\"Pluto\"); using Pluto; Pluto.run()")
+                //         .expect("CString::new failed");
+
+                // // Execute Julia process, with Pluto
+                // execvp(
+                //     julia_executable,
+                //     &[
+                //         &julia_args_julia,
+                //         &julia_args_execute,
+                //         &julia_args_run_pluto,
+                //         // &julia_args_install_and_run_pluto,
+                //     ],
+                // )
+                // // .expect("failed to start Julia -> Pluto process...");
+                // .unwrap_or(
+                //     execvp(
+                //         julia_executable,
+                //         &[
+                //             &julia_args_julia,
+                //             &julia_args_execute,
+                //             &julia_args_install_and_run_pluto,
+                //         ],
+                //     )
+                //     .expect("Could not install Pluto"),
+                // );
+
                 // if run with `gsn jl run`, then start the julia process using the current directory as the active environment
                 ("run", _sub_matches) => {
                     let julia_executable_string =

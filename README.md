@@ -10,12 +10,12 @@ Otherwise, the cli has some useful functionality already - feel free to give it 
 Currently, the CLI commands looks something like this:
 - gsn
   - new
-    - env [env name]: create a new environment in the current directory (default) or with the specified env name
-  - jl  (description: start Julia with current directory environment activated)
+    - env [?env_name] 			(description: create a new environment in the current directory (default) or with the specified env name)
+  - jl 					 		(description: start Julia with current directory environment activated)
     - run | repl [?environment_name]   (description: (same as above) Start the Julia REPL with curr. dir. activated if no arg is supplied, or start the specified env by adding an argument)
-    - pluto | notebook | nb   	(description: start Pluto.jl (the notebook environment written in Julia); currently, must have pluto installed in the global Julia environment for this command to function properly)
+    - pluto | notebook | nb   	(description: start Pluto.jl (the notebook environment written in Julia); the Gaston CLI tool will ensure you have the latest version of Pluto in your global environment)
     - edit						(description: open VSCode with the current directory, and start up a Julia process in the terminal for working / testing interactively; currently, VSCOde must already be installed and on the the user's $PATH)
-  - pkg 						(description: get status of installed packages (defaults to current local environment))
+  - pkg 						(description: get status of installed packages; all commands default to current local environment for adding/removing packages))
 	- status					(description: get status of packages)
 	- add [package_name]		(description: add a package from the Julia registry)
 	- remove | rm [package_name] (description: remove package)

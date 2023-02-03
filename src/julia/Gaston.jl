@@ -1,5 +1,26 @@
 module Gaston
 
+module Jl_Command
+using Pkg
+
+function install_pluto_nb()
+
+    # Activate global scope
+    Pkg.activate()
+
+    try
+        # update Pluto Notebook environment
+        Pkg.update("Pluto")
+    catch
+        # Add Pluto Notebook environment
+        Pkg.add("Pluto")
+    end
+
+    return "Pluto Notebooks is up to date"
+end
+
+end # jl_command
+
 module PkgAPI
 using Pkg
 
@@ -20,6 +41,8 @@ function status()
 
     # Pkg.status(; outdated=true, IO=stderr)
     # status = Pkg.status(; IO=String)
+
+    # Activate local scope environment
     Pkg.activate(".")
     status = Pkg.status(; IO=stdout)
     # no errors occurred
@@ -28,6 +51,8 @@ function status()
 end
 
 function status_global()
+    # Activate global scope
+    Pkg.activate()
     status = Pkg.status(; IO=stdout)
     # no errors occurred
     return "Ready"
@@ -41,12 +66,18 @@ end
 #
 # update all packages
 function update()
+    # Activate local scope environment
+    Pkg.activate(".")
+
     update = Pkg.update()
     return "Success"
 end
 
 # update specific package:
 function update(pkgname::String)
+    # Activate local scope environment
+    Pkg.activate(".")
+
     try
         update = Pkg.update(pkgname)
         return "Success"
@@ -57,6 +88,9 @@ end
 
 # update multiple packages:
 function update(pkgnames::Vector{String})
+    # Activate local scope environment
+    Pkg.activate(".")
+
     update = Pkg.update(pkgnames)
     return "Success"
 end
@@ -65,6 +99,9 @@ end
 #
 
 function add_package(pkgname::String)
+    # Activate local scope environment
+    Pkg.activate(".")
+
     try
         Pkg.add(pkgname)
         return "$pkgname added to project environment"
@@ -76,6 +113,9 @@ end
 
 
 function remove_package(pkgname::String)
+    # Activate local scope environment
+    Pkg.activate(".")
+
     Pkg.rm(pkgname)
     return "$pkgname has been removed"
 end
@@ -122,4 +162,5 @@ end
 
 
 end # module PkgAPI
+
 end # module Gaston
