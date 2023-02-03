@@ -1,4 +1,3 @@
-pub mod activate;
 pub mod add_package;
 pub mod remove_package;
 pub mod status;

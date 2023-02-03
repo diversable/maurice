@@ -18,7 +18,7 @@ mod pkg;
 
 use jl_command::pluto_nb::install_pluto;
 use julia::write_julia_script_to_disk;
-use pkg::activate::{activate_env_in_current_dir, activate_env_w_name};
+use new::activate_new::{activate_env_in_current_dir, activate_env_w_name};
 use pkg::add_package::*;
 use pkg::remove_package::*;
 use pkg::status::*;
@@ -73,7 +73,7 @@ fn cli() -> Command {
                 // Status
             .subcommand(
                 Command::new("status")
-                    .about("gets the status of the installed packages; defaults to local environment")
+                    .about("gets the status of the installed packages; defaults to current directory's environment, if it exists. Otherwise, reports global env package status")
                     // .long_flag("global")
                     // .short_flag('g')
             )
@@ -339,7 +339,7 @@ fn main() {
             match pkg_command {
                 ("status", sub_matches) => {
                     status(&mut julia);
-                    println!("sub_matches: {:?}", sub_matches);
+                    // println!("sub_matches: {:?}", sub_matches);
                 }
                 ("add", sub_matches) => {
                     let add_one_pkg = sub_matches.get_one::<String>("PACKAGE_NAME");
