@@ -45,14 +45,16 @@ Using partial commands also works with this CLI tool, so using a command like `g
 
 Some helpful workflow shortcuts with the `gsn` (Gaston) CLI are:
 
-- create an environment in the current working directory: `gsn new env` or `gsn n env`
+- create an environment with default files & folders in the current working directory: `gsn new` or `gsn new env`
 
 - Get the status of packages in your environment:
-`gsn p st`
+`gsn pkg ls` or `gsn p st` (or `gsn pkg status` if you like typing)
 
 - Install a package in the local environment:
   `gsn p i <package_name>` or `gsn p add <package_name>`
   (ie. gaston package install | add package)
 
-- Start VSCode in the current directory and start the julia repl for interactive work on the side: `gsn jl edit` or `gsn jl ed` (NB: currently, VSCode must already be installed for this command to work)
+- Start VSCode in the current directory and start the julia repl for interactive work on the side: `gsn jl edit` or `gsn j ed` (NB: currently, VSCode must already be installed for this command to work)
 
+- Start a Pluto Notebook:
+  `gsn jl pluto` or `gsn j p`
