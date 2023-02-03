@@ -120,7 +120,7 @@ fn cli() -> Command {
             Command::new("new")
                 .about("creates new environments (scripts), projects (binaries), and packages (libaries)")
                 .args_conflicts_with_subcommands(true)
-                .arg_required_else_help(true)
+                // .arg_required_else_help(true)
                 .subcommand(
                     Command::new("env")
                         .arg(arg!([PATH_FOR_NEW_ENV]))
