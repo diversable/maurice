@@ -62,11 +62,6 @@ fn cli() -> Command {
             Command::new("pkg")
                 .about("gets the status of installed packages; sub-commands are available to manage packages in your project")
                 .args_conflicts_with_subcommands(true)
-                // use the `global` flags to operate on the global environment...
-                // .long_flag("global")
-                // .short_flag('g')
-        // )
-
 
                 // SUB-COMMANDS
 
@@ -101,15 +96,11 @@ fn cli() -> Command {
             )
                 //
                 //
-                // NB! Because `infer_subcommands` is turned on, above, you can also use "up" as a short form to activate the `update` command.
-                // TODO! This workflow tip about `infer_subcommands` should be noted as an example in the help docs printed on the cmd line.
-                // TODO! (cont'd) Eg. use `gsn p up` to update packages.
-                //
-                //
                 // TODO! need to have a flag to differentiate between updating the local environment and the global env
                 // Todo! (con'td) Which should be the default? Local env as default, or global env as default?
                 //
                 // Update Package
+                // NB! Because `infer_subcommands` is turned on, above, you can also use `gsn p up` as a short form to activate the `update` command.
             .subcommand(
                 Command::new("update")
                     .arg(arg!([PACKAGE_NAME]))
@@ -122,10 +113,10 @@ fn cli() -> Command {
                 .args_conflicts_with_subcommands(true)
                 // .arg_required_else_help(true)
                 .subcommand(
-                    Command::new("env")
-                        .arg(arg!([PATH_FOR_NEW_ENV]))
+                    Command::new("script")
+                        .arg(arg!([PATH_FOR_NEW_SCRIPT]))
                         .about("create a new Julia environment in the current directory (default), or add a path to create an environment in a different directory")
-                        .visible_alias("environment")
+
                 )
         )
 }
@@ -178,8 +169,8 @@ fn main() {
             match new_command {
                 // if you get an argument, call env with the arg. Otherwise, activate environment in current directory
                 ("env", sub_matches) => {
-                    if let Some(_) = sub_matches.get_one::<String>("PATH_FOR_NEW_ENV") {
-                        let activate_env = sub_matches.get_one::<String>("PATH_FOR_NEW_ENV");
+                    if let Some(_) = sub_matches.get_one::<String>("PATH_FOR_NEW_SCRIPT") {
+                        let activate_env = sub_matches.get_one::<String>("PATH_FOR_NEW_SCRIPT");
 
                         activate_env_w_name(
                             &mut julia,
@@ -224,47 +215,6 @@ fn main() {
                 }
 
                 // };
-
-                //
-                // execv[p] implementation of Pluto run command
-                //
-                // let julia_executable_string =
-                //     CString::new("julia").expect("CString::new failed...");
-                // let julia_executable = julia_executable_string.as_c_str();
-
-                // let julia_args_julia = CString::new("julia").expect("CString::new failed...");
-
-                // let julia_args_execute = CString::new("-E").expect("CString::new failed...");
-
-                // let julia_args_run_pluto =
-                //     CString::new("using Pluto; Pluto.run()").expect("CString::new failed...");
-
-                // let julia_args_install_and_run_pluto =
-                //     CString::new("using Pkg; Pkg.add(\"Pluto\"); using Pluto; Pluto.run()")
-                //         .expect("CString::new failed");
-
-                // // Execute Julia process, with Pluto
-                // execvp(
-                //     julia_executable,
-                //     &[
-                //         &julia_args_julia,
-                //         &julia_args_execute,
-                //         &julia_args_run_pluto,
-                //         // &julia_args_install_and_run_pluto,
-                //     ],
-                // )
-                // // .expect("failed to start Julia -> Pluto process...");
-                // .unwrap_or(
-                //     execvp(
-                //         julia_executable,
-                //         &[
-                //             &julia_args_julia,
-                //             &julia_args_execute,
-                //             &julia_args_install_and_run_pluto,
-                //         ],
-                //     )
-                //     .expect("Could not install Pluto"),
-                // );
 
                 // if run with `gsn jl run`, then start the julia process using the current directory as the active environment
                 ("run", _sub_matches) => {

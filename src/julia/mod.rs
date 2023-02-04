@@ -7,8 +7,8 @@
 // use jlrs::prelude::*;
 use dirs::home_dir;
 use std::fs::{self, File};
-use std::io::prelude::*;
-use std::io::{Error, Write};
+// use std::io::prelude::*;
+use std::io::Write;
 use std::path::PathBuf;
 
 // If the Julia script isn't in the proper place in the filesystem, write/output the julia code to a file named `Gaston.jl`
@@ -27,7 +27,7 @@ pub fn write_julia_script_to_disk() -> std::io::Result<()> {
     gaston_file_path.push(&julia_file_path);
 
     let _dotjulia_gaston_dir =
-        fs::create_dir(gaston_folder).expect("Couldn't create $HOME/.julia/gaston/ directory");
+        fs::create_dir(gaston_folder).expect("Couldn't create $HOME/.julia/gaston/  directory");
 
     // create Gaston.jl file in `$HOME/.julia/gaston/`
     let mut gaston_jl_file = File::create(gaston_file_path)?;

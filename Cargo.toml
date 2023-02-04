@@ -11,6 +11,7 @@ anyhow = "1.0.68"
 # chrono = { version = "0.4", features = ["serde"] }
 
 clap = { version = "4.1.4", features = ["derive", "cargo"] }
+dialoguer = "0.10.3"
 # cluFlock = "1.2.7"
 # console = "0.15.5"
 # ctrlc = "3.2.4"
@@ -26,3 +27,6 @@ jlrs = { version = "0.17.0", features = ["sync-rt"] }
 
 [target.'cfg(not(windows))'.dependencies]
 nix = { version = "0.26" }
+
+[dev-dependencies]
+assert_cmd = "2.0.4"

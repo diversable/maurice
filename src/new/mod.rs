@@ -1,2 +1,3 @@
-pub mod project;
+pub mod app;
+pub mod package;
 pub mod script;
