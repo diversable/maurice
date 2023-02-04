@@ -164,7 +164,7 @@ fn main() {
             let new_command = sub_matches
                 .subcommand()
                 // If an argument isn't supplied to `gsn new <nothing>`, then default to creating a new environment
-                .unwrap_or(("env", sub_matches));
+                .unwrap_or(("script", sub_matches));
 
             match new_command {
                 // if you get an argument, call env with the arg. Otherwise, activate environment in current directory
@@ -174,7 +174,7 @@ fn main() {
 
                         activate_env_w_name(
                             &mut julia,
-                            activate_env.expect("tried and failed to activate environment..."),
+                            activate_env.expect("tried and failed to create a new script..."),
                         );
                     } else {
                         activate_env_in_current_dir(&mut julia);
