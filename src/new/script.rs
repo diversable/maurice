@@ -19,7 +19,6 @@ end # module Main
 
 const JL_RUNTESTS_CONTENTS: &str = r###"module Test
 
-
 # write tests here...
 
 end # module Test
@@ -84,7 +83,7 @@ pub fn new_script_ask_name(julia: &mut Julia) {
         .unwrap_or("Main".to_string());
 
     let script_name = input_script_name.capitalize();
-    new_script_w_name(julia, script_name.as_str())
+    new_script_w_name(julia, script_name.as_str());
 }
 
 // TODO! create default files unless ./src/Main.jl & /tests/run_tests.jl files exist
@@ -96,7 +95,7 @@ pub fn new_script_w_name(julia: &mut Julia, script_name: &str) {
         .scope(|mut frame| {
             let jl_module_main = Module::main(&mut frame);
 
-            let script_name = JuliaString::new(&mut frame, script_name);
+            let script_name = JuliaString::new(&mut frame, &script_name);
 
             unsafe {
                 jl_module_main
@@ -121,6 +120,26 @@ pub fn new_script_w_name(julia: &mut Julia, script_name: &str) {
 
     // TODO! Change the create_default.... fn to handle a target directory for this funcion!
     // create_default_files_for_env().expect("Couldn't write default files for the environment");
+
+    let current_dir = env::current_dir().expect("couldn't get current directory");
+
+    let mut tests_dir_path = path::PathBuf::new();
+    tests_dir_path.push(&current_dir);
+    tests_dir_path.push("./tests");
+
+    DirBuilder::new()
+        .recursive(true)
+        .create(&tests_dir_path)
+        .expect("Could not create `tests` directory");
+
+    let mut tests_file_path = path::PathBuf::new();
+    tests_file_path.push(tests_dir_path);
+    tests_file_path.push("./run_tests.jl");
+    let mut jl_runtests_file =
+        File::create(&tests_file_path).expect("could not create runtests.jl file");
+
+    write!(jl_runtests_file, "{}", JL_RUNTESTS_CONTENTS)
+        .expect("Could not write test file contents");
 
     println!("\n{:?}", activate.unwrap());
 }
