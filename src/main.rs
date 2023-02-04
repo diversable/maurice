@@ -18,7 +18,7 @@ mod pkg;
 
 use jl_command::pluto_nb::install_or_update_pluto;
 use julia::write_julia_script_to_disk;
-use new::script::{activate_env_in_current_dir, activate_env_w_name};
+use new::script::{new_script_ask_name, new_script_w_name};
 use pkg::add_package::*;
 use pkg::remove_package::*;
 use pkg::status::*;
@@ -112,9 +112,10 @@ fn cli() -> Command {
                 .about("creates new environments (scripts), projects (binaries), and packages (libaries)")
                 .args_conflicts_with_subcommands(true)
                 // .arg_required_else_help(true)
+                .visible_alias("generate")
                 .subcommand(
                     Command::new("script")
-                        .arg(arg!([PATH_FOR_NEW_SCRIPT]))
+                        .arg(arg!([NAME_FOR_NEW_SCRIPT]))
                         .about("create a new Julia environment in the current directory (default), or add a path to create an environment in a different directory")
 
                 )
@@ -169,15 +170,15 @@ fn main() {
             match new_command {
                 // if you get an argument, call env with the arg. Otherwise, activate environment in current directory
                 ("script", sub_matches) => {
-                    if let Some(_) = sub_matches.get_one::<String>("PATH_FOR_NEW_SCRIPT") {
-                        let activate_env = sub_matches.get_one::<String>("PATH_FOR_NEW_SCRIPT");
+                    if let Some(_) = sub_matches.get_one::<String>("NAME_FOR_NEW_SCRIPT") {
+                        let activate_env = sub_matches.get_one::<String>("NAME_FOR_NEW_SCRIPT");
 
-                        activate_env_w_name(
+                        new_script_w_name(
                             &mut julia,
                             activate_env.expect("tried and failed to create a new script..."),
                         );
                     } else {
-                        activate_env_in_current_dir(&mut julia);
+                        new_script_ask_name(&mut julia);
                     }
                 }
                 _ => {
@@ -291,7 +292,7 @@ fn main() {
             let pkg_command = sub_matches.subcommand().unwrap_or(("status", sub_matches));
 
             match pkg_command {
-                ("status", sub_matches) => {
+                ("status", _sub_matches) => {
                     status(&mut julia);
                     // println!("sub_matches: {:?}", sub_matches);
                 }

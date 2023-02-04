@@ -19,7 +19,7 @@ The `gsn` (Gaston) CLI does have some useful functionality already - so feel fre
 
 Currently, the CLI looks something like this:
 - gsn
-  - new _(create a new environment & project struture in the current directory)_
+  - new | generate _(create a new environment & project struture in the current directory)_
     - script [?dir_name]  _(create a new environment & project structure in the current directory (default) or with the specified dir name)_
   - jl 					 		   _( start Julia with current directory environment activated)_
     - run | repl [?environment_name]   _((same as above) Start the Julia REPL with current dir. activated if no arg is supplied, or start the specified env by adding an argument)_

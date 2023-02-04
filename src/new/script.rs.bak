@@ -1,7 +1,5 @@
-use capitalize::Capitalize;
-use dialoguer::{console::Term, theme::ColorfulTheme, Input};
 use jlrs::prelude::*;
-use std::env::{self};
+use std::env::{self, current_dir};
 use std::fs::{DirBuilder, File};
 use std::io::prelude::*;
 use std::path;
@@ -26,7 +24,7 @@ end # module Test
 "###;
 
 // TODO! Change this function to handle setting up files in a target directory
-fn create_default_files_for_script() -> std::io::Result<()> {
+fn create_default_files_for_env() -> std::io::Result<()> {
     // Check to ensure that you're not going to over-write any pre-existing user content...
     let src_main_file = path::PathBuf::from("./src/Main.jl");
     if src_main_file.exists() {
@@ -77,26 +75,15 @@ fn create_default_files_for_script() -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn new_script_ask_name(julia: &mut Julia) {
-    let input_script_name: String = Input::new()
-        .with_prompt("What name would you like to give your script?")
-        .interact_text()
-        .unwrap_or("Main".to_string());
+pub fn activate_env_in_current_dir(julia: &mut Julia) {
+    println!(
+        "\nActivating environment {:?}\n",
+        env::current_dir().expect("couldn't retrieve current directory")
+    );
 
-    let script_name = input_script_name.capitalize();
-    new_script_w_name(julia, script_name.as_str())
-}
-
-// TODO! create default files unless ./src/Main.jl & /tests/run_tests.jl files exist
-pub fn new_script_w_name(julia: &mut Julia, script_name: &str) {
-    println!("\nActivating environment \"{}\"\n", &script_name);
-
-    let script_name = script_name.to_string();
-    let activate = julia
+    let _activate = julia
         .scope(|mut frame| {
             let jl_module_main = Module::main(&mut frame);
-
-            let script_name = JuliaString::new(&mut frame, script_name);
 
             unsafe {
                 jl_module_main
@@ -104,16 +91,62 @@ pub fn new_script_w_name(julia: &mut Julia, script_name: &str) {
                     .submodule(&mut frame, "Gaston")?
                     .submodule(&mut frame, "New")?
                     // the same holds true for the function: the module is never reloaded so it's globally rooted
-                    .function(&mut frame, "activate_script_in_target_dir")?
+                    .function(&mut frame, "make_env_in_current_dir")?
                     //
                     // CALLING A FUNCTION
                     //
-                    // Call the function with the target Julia frame and 1 argument
-                    .call1(&mut frame, script_name.as_value())
+                    // Call the function with the target Julia frame
+                    .call0(&mut frame)
                     //
                     // If you don't want to use the exception, it can be converted to a `JlrsError`
                     // In this case the error message will contain the message that calling `display` in Julia would show
                     .into_jlrs_result()?
+                    //
+                    // If the Julia function that was called returns a `Cint`, then it can be unboxed on the Rust side as an `i32`
+                    // .unbox()::<i32>()
+                    //
+                    //
+                    // Here, unbox a function where the return type from Julia which is `Nothing`
+                    .unbox::<Nothing>()
+            }
+        })
+        .expect("Result is an error");
+
+    create_default_files_for_env().expect("Couldn't write default files for the environment");
+}
+
+// TODO! create default files unless ./src/Main.jl & /tests/run_tests.jl files exist
+pub fn activate_env_w_name(julia: &mut Julia, env_name: &str) {
+    println!("\nActivating environment \"{}\"\n", &env_name);
+
+    let env_name = env_name.to_string();
+    let activate = julia
+        .scope(|mut frame| {
+            let jl_module_main = Module::main(&mut frame);
+
+            let environment = JuliaString::new(&mut frame, env_name);
+
+            unsafe {
+                jl_module_main
+                    // the submodule doesn't have to be rooted because it's never reloaded.
+                    .submodule(&mut frame, "Gaston")?
+                    .submodule(&mut frame, "New")?
+                    // the same holds true for the function: the module is never reloaded so it's globally rooted
+                    .function(&mut frame, "activate_env_in_target_dir")?
+                    //
+                    // CALLING A FUNCTION
+                    //
+                    // Call the function with the target Julia frame and 1 argument
+                    .call1(&mut frame, environment.as_value())
+                    //
+                    // If you don't want to use the exception, it can be converted to a `JlrsError`
+                    // In this case the error message will contain the message that calling `display` in Julia would show
+                    .into_jlrs_result()?
+                    // The function that was called returns a `Cint`, which can be unboxed as `i32`
+                    // .unbox()::<i32>()
+                    //
+                    // unbox a function return type from Julia which is `Nothing`
+                    // .unbox::<Nothing>()
                     .unbox::<String>()
             }
         })
@@ -122,5 +155,8 @@ pub fn new_script_w_name(julia: &mut Julia, script_name: &str) {
     // TODO! Change the create_default.... fn to handle a target directory for this funcion!
     // create_default_files_for_env().expect("Couldn't write default files for the environment");
 
-    println!("\n{:?}", activate.unwrap());
+    println!(
+        "\nActivated new project environment\n{:?}",
+        activate.unwrap()
+    );
 }

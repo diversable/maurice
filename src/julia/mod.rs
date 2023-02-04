@@ -186,15 +186,35 @@ end # module PkgAPI
 module New
 using Pkg
 
-function activate_env_in_target_dir(project_env_name::String)
+Pkg.activate()
+Pkg.add("Documenter")
+Pkg.add("DocumenterTools")
+Pkg.add("PkgTemplates")
+
+using Documenter
+using DocumenterTools
+using PkgTemplates
+
+function activate_script_in_target_dir(project_env_name::String)
+    Pkg.generate(project_env_name)
     Pkg.activate(project_env_name)
     try
         Pkg.add("Test")
-        Pkg.add("Documenter")
-        return "New project created: $project_env_name"
+
+        generate_docs(project_env_name)
+
+        return "New script created: $project_env_name"
     catch
         return "Could not add foundational packages for your project. Please try again when you're connected to the network..."
     end
+end
+
+function generate_docs(project_env_name)
+    cd(project_env_name)
+    Pkg.activate(project_env_name)
+
+    DocumenterTools.generate()
+
 end
 
 function make_env_in_current_dir()
