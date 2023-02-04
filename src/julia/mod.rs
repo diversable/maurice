@@ -111,7 +111,7 @@ end
 
 function status_global()
     # Activate global scope env
-    Pkg.activate()
+    activate_global_scope_environment()
 
     status = Pkg.status(; IO=stdout)
     # no errors occurred
@@ -136,7 +136,7 @@ end
 # update specific package:
 function update(pkgname::String)
     # Activate local scope environment
-    Pkg.activate(".")
+    local_env_else_global_env()
 
     try
         update = Pkg.update(pkgname)
@@ -187,25 +187,31 @@ module New
 using Pkg
 
 Pkg.activate()
-Pkg.add("Documenter")
-Pkg.add("DocumenterTools")
-Pkg.add("PkgTemplates")
+
+if ("Documenter" in keys(Pkg.project().dependencies) && "DocumenterTools" in keys(Pkg.project().dependencies) && "PkgTemplates" in keys(Pkg.project().dependencies) && "Test" in keys(Pkg.project().dependencies))
+    println("Dependencies are ready")
+else
+    println("Adding the packages necessary to set up your project...")
+    Pkg.add("Documenter")
+    Pkg.add("DocumenterTools")
+    Pkg.add("PkgTemplates")
+    Pkg.add("Test")
+end
 
 using Documenter
 using DocumenterTools
 using PkgTemplates
 
 function activate_script_in_target_dir(project_env_name::String)
-    Pkg.generate(project_env_name)
-    Pkg.activate(project_env_name)
     try
-        Pkg.add("Test")
-
+        Pkg.generate(project_env_name)
+        Pkg.activate(project_env_name)
+        # TODO! This function is fallible; fix this implementation!
         generate_docs(project_env_name)
 
         return "New script created: $project_env_name"
     catch
-        return "Could not add foundational packages for your project. Please try again when you're connected to the network..."
+        return "Unable to create script in the target directory"
     end
 end
 
@@ -228,26 +234,26 @@ function make_env_in_current_dir()
 
 end
 
-function make_project_in_defined_directory(directory::String)
-    install_pkgtemplates()
-    Pkg.activate(".")
+# function make_project_in_defined_directory(directory::String)
+#     install_pkgtemplates()
+#     Pkg.activate(".")
 
-    # Must add a package in order to generate Project.toml file
-    # So... add a package that *everyone* should use in their packages:
+#     # Must add a package in order to generate Project.toml file
+#     # So... add a package that *everyone* should use in their packages:
 
-    Pkg.add("Documenter")
-end
+#     Pkg.add("Documenter")
+# end
 
-function install_pkgtemplates()
-    Pkg.activate()
-    try
-        Pkg.update("PkgTemplates")
-        return "PkgTemplates is up to date"
-    catch
-        Pkg.add("PkgTemplates")
-        return "Added PkgTemplates"
-    end
-end
+# function install_pkgtemplates()
+#     Pkg.activate()
+#     try
+#         Pkg.update("PkgTemplates")
+#         return "PkgTemplates is up to date"
+#     catch
+#         Pkg.add("PkgTemplates")
+#         return "Added PkgTemplates"
+#     end
+# end
 
 end # module New
 

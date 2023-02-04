@@ -132,13 +132,14 @@ fn main() {
 
     let home_dir = home_dir().expect("Couldn't find the user's home directory");
     let julia_dir = PathBuf::from(".julia/gaston/Gaston.jl");
-    let mut gaston_path = PathBuf::new();
-    gaston_path.push(home_dir);
-    gaston_path.push(julia_dir);
-    let gaston_jl_path = &gaston_path;
+    let mut gaston_jl_path = PathBuf::new();
+    gaston_jl_path.push(home_dir);
+    gaston_jl_path.push(julia_dir);
 
     // Include some custom code defined in <file>.
     // This is safe because the included code doesn't do any strange things.
+
+    // TODO! update this check to ensure that the contents of the Gaston.jl file matches what's in the julia/mod.rs -> JULIA_FILE_CONTENTS &str...
     unsafe {
         if gaston_jl_path.exists() {
             // println!("Gaston path exists @: {:?}", gaston_jl_path);
@@ -153,7 +154,7 @@ fn main() {
 
             julia
                 .include(gaston_jl_path)
-                .expect("Could not include file");
+                .expect("Could not include file - please file a bug report!");
         }
     }
 
