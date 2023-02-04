@@ -20,7 +20,7 @@ The `gsn` (Gaston) CLI does have some useful functionality already - so feel fre
 Currently, the CLI looks something like this:
 - gsn
   - new _(create a new environment & project struture in the current directory)_
-    - env [?dir_name]  _(create a new environment & project structure in the current directory (default) or with the specified dir name)_
+    - script [?dir_name]  _(create a new environment & project structure in the current directory (default) or with the specified dir name)_
   - jl 					 		   _( start Julia with current directory environment activated)_
     - run | repl [?environment_name]   _((same as above) Start the Julia REPL with current dir. activated if no arg is supplied, or start the specified env by adding an argument)_
     - pluto | notebook | nb   	_(start Pluto.jl (the notebook environment written in Julia); the Gaston CLI tool will ensure you have the latest version of Pluto in your global environment)_
@@ -50,8 +50,8 @@ Some helpful workflow shortcuts with the `gsn` (Gaston) CLI are:
 
 - Start a Pluto Notebook:
   `gsn jl pluto` or `gsn j p`
-  
-  
+
+
 ---
 
 Building from source:
