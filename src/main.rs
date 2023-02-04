@@ -168,7 +168,7 @@ fn main() {
 
             match new_command {
                 // if you get an argument, call env with the arg. Otherwise, activate environment in current directory
-                ("env", sub_matches) => {
+                ("script", sub_matches) => {
                     if let Some(_) = sub_matches.get_one::<String>("PATH_FOR_NEW_SCRIPT") {
                         let activate_env = sub_matches.get_one::<String>("PATH_FOR_NEW_SCRIPT");
 
@@ -181,7 +181,7 @@ fn main() {
                     }
                 }
                 _ => {
-                    unreachable!("Unsupported subcommand",)
+                    unreachable!("Unsupported `new` subcommand",)
                 }
             }
         }
