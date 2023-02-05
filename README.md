@@ -37,6 +37,27 @@ The available commands are summarized here:
 
 NOTE: Using partial commands also works with this CLI tool, so using a command like `gsn p up` will work the same as the command `gsn pkg update` and will update all packages; `gsn j ed` will work the same as `gsn jl edit` and will start up VSCode as well as start the Julia process in the terminal for you.
 
+---
+
+Some helpful workflow shortcuts with the `gsn` (Gaston) CLI are:
+
+- create an environment with default files & folders in the current working directory: `gsn new` or `gsn new env`
+
+- Get the status of packages in your environment:
+`gsn pkg ls` or `gsn p st` (or `gsn pkg status` if you like typing)
+
+- Install a package in the local environment:
+  `gsn p i <package_name>` or `gsn p add <package_name>`
+  (ie. gaston package install | add package)
+
+- Start VSCode in the current directory and start the julia repl for interactive work on the side: `gsn jl edit` or `gsn j ed` (NB: currently, VSCode must already be installed for this command to work)
+
+- Start a Pluto Notebook:
+  `gsn jl pluto` or `gsn j p`
+
+
+---
+
 Currently, the CLI functions include:
 
 
@@ -95,31 +116,8 @@ Currently, the CLI functions include:
 => _update all packages if the 'package_name' is not provided, or update specific package in local environment if 'package_name' is given_
 
 
-
-
-
-
-
 ---
 
-Some helpful workflow shortcuts with the `gsn` (Gaston) CLI are:
-
-- create an environment with default files & folders in the current working directory: `gsn new` or `gsn new env`
-
-- Get the status of packages in your environment:
-`gsn pkg ls` or `gsn p st` (or `gsn pkg status` if you like typing)
-
-- Install a package in the local environment:
-  `gsn p i <package_name>` or `gsn p add <package_name>`
-  (ie. gaston package install | add package)
-
-- Start VSCode in the current directory and start the julia repl for interactive work on the side: `gsn jl edit` or `gsn j ed` (NB: currently, VSCode must already be installed for this command to work)
-
-- Start a Pluto Notebook:
-  `gsn jl pluto` or `gsn j p`
-
-
----
 
 Building from source:
 
