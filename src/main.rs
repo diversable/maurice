@@ -36,7 +36,7 @@ use dialoguer;
 
 fn cli() -> Command {
     Command::new("gsn")
-        .about("\nGaston (gsn): The Julia project manager")
+        .about("\nGaston (gt): The Julia project manager")
         .subcommand_required(true)
         .arg_required_else_help(true)
         .allow_external_subcommands(true)
