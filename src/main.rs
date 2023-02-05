@@ -149,14 +149,39 @@ fn cli() -> Command {
     )
 }
 
+// pub fn run_pluto_nb(julia: &mut Julia) {
+//     check_pluto_nb_is_installed(julia);
+
+//     let _output = process::Command::new("julia")
+//         .arg("-E")
+//         .arg("using Pluto; Pluto.run()")
+//         .spawn()
+//         .expect("Could not run Julia -> Pluto notebook");
+// }
+
 pub fn run_pluto_nb(julia: &mut Julia) {
     check_pluto_nb_is_installed(julia);
 
-    let _output = process::Command::new("julia")
-        .arg("-E")
-        .arg("using Pluto; Pluto.run()")
-        .spawn()
-        .expect("Could not run Julia -> Pluto notebook");
+    let julia_executable_string = CString::new("julia").expect("CString::new failed...");
+    let julia_executable = julia_executable_string.as_c_str();
+
+    let julia_args_julia = CString::new("julia").expect("CString::new failed...");
+    let julia_args_project = CString::new("--project=@.").expect("CString::new failed...");
+    let julia_args_exec = CString::new("-E").expect("couldn't write -E flag for julia process");
+
+    let julia_args_pluto =
+        CString::new("using Pluto; Pluto.run()").expect("couldn't create c-string for using Pluto");
+
+    execvp(
+        julia_executable,
+        &[
+            julia_args_julia,
+            julia_args_project,
+            julia_args_exec,
+            julia_args_pluto,
+        ],
+    )
+    .expect("failed to exec Julia process...");
 }
 
 fn main() {

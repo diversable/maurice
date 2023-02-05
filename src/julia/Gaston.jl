@@ -11,7 +11,7 @@ function check_pluto_is_installed_jl()
     Pkg.activate()
 
     if "Pluto" in keys(Pkg.project().dependencies)
-        println("Pluto is installed")
+        # println("Pluto is installed")
     else
         println("Adding Pluto to your global environment...")
         Pkg.add("Pluto")
@@ -258,7 +258,7 @@ using Pkg
 
 # Ensure PackageCompiler is in the global environment stack
 if ("PackageCompiler" in keys(Pkg.project().dependencies))
-    println("PackageCompiler is ready to make your app...")
+    # println("PackageCompiler is ready to make your app...")
 else
     Pkg.add("PackageCompiler")
 end

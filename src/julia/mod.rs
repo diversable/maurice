@@ -301,15 +301,15 @@ using Pkg
 
 # Ensure PackageCompiler is in the global environment stack
 if ("PackageCompiler" in keys(Pkg.project().dependencies))
-    println("PackageCompiler is ready to make your app...")
+    # println("PackageCompiler is ready to make your app...")
 else
     Pkg.add("PackageCompiler")
 end
 using PackageCompiler
 
 function compile_app(source_code_path::String, target_directory_path::String)
-    println(source_code_path * ": source dir path from Rust")
-    println(target_directory_path * ": target dir path from Rust")
+    # println(typeof(source_code_path) * ": source dir path from Rust")
+    # println(typeof(target_directory_path) * ": target dir path from Rust")
     try
         create_app(source_code_path, target_directory_path)
         return "Your app has been compiled! You can find the executable in the $target_directory_path/bin folder"
@@ -322,4 +322,5 @@ end
 end # module Create
 
 end # module Gaston
+
 "###;
