@@ -227,20 +227,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gsn"
-version = "0.1.2"
-dependencies = [
- "anyhow",
- "assert_cmd",
- "capitalize",
- "clap",
- "dialoguer",
- "dirs",
- "jlrs",
- "nix",
-]
-
-[[package]]
 name = "heck"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -293,6 +279,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
 dependencies = [
  "either",
+]
+
+[[package]]
+name = "jl"
+version = "0.1.2"
+dependencies = [
+ "anyhow",
+ "assert_cmd",
+ "capitalize",
+ "clap",
+ "dialoguer",
+ "dirs",
+ "jlrs",
+ "nix",
 ]
 
 [[package]]

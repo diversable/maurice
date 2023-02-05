@@ -1,6 +1,6 @@
 [package]
-name = "gsn"
-description = "Gaston (gsn): the Julia project manager"
+name = "jl"
+description = "Gaston (gj | jl ): the Julia project manager"
 version = "0.1.2"
 edition = "2021"
 
