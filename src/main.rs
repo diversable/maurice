@@ -35,7 +35,7 @@ use pkg::update::*;
 use dialoguer;
 
 fn cli() -> Command {
-    Command::new("gsn")
+    Command::new("gt")
         .about("\nGaston (gt): The Julia project manager")
         .subcommand_required(true)
         .arg_required_else_help(true)
@@ -47,7 +47,7 @@ fn cli() -> Command {
         .infer_subcommands(true)
         .subcommand(
             Command::new("jl")
-                .about("start the Julia REPL using the project in the current directory")
+                .about("start the Julia REPL using the project in the current directory; sub-commands start Pluto notebooks and VSCode")
                 .args_conflicts_with_subcommands(true)
                 // TODO! should I implement a `repl` subcommand as well, which does the same thing as the 'run' command? I'm leaning towards yes...
                 .subcommand(
@@ -120,7 +120,7 @@ fn cli() -> Command {
         ) // END PKG Sub-command
         .subcommand(
             Command::new("new")
-                .about("creates new environments (scripts), projects (binaries), and packages (libaries)")
+                .about("creates new scripts, apps, and packages* (*feature in progress)")
                 .args_conflicts_with_subcommands(true)
                 // .arg_required_else_help(true)
                 .visible_alias("generate")
@@ -139,7 +139,7 @@ fn cli() -> Command {
         )
         .subcommand(Command::new("compile")
             .visible_alias("create")
-            .about("create apps and system images (sysimages)")
+            .about("create/compile apps and system images* (sysimages) (*feature in-progress)")
                 .subcommand(Command::new("app")
                     .about("compiles an app; requires 2 args: a path to the source code, and a path to where the compiled app will be placed")
                     .visible_alias("application")
