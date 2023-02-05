@@ -2,8 +2,6 @@
 
 use std::ffi::{CString, OsString};
 use std::fs;
-use std::io;
-use std::io::Read;
 use std::path::PathBuf;
 use std::process;
 
@@ -24,8 +22,10 @@ mod pkg;
 use jl_command::pluto_nb::check_pluto_nb_is_installed;
 use julia::{write_julia_script_to_disk, JULIA_FILE_CONTENTS};
 // use lib::run_pluto_nb;
-use compile::application::{self, compile_app};
-use new::app::{new_app_ask_name, new_app_w_name};
+use compile::application::compile_app;
+use new::app::{
+    get_app_compile_target_path, get_app_source_path, new_app_ask_name, new_app_w_name,
+};
 use new::script::{new_script_ask_name, new_script_w_name};
 use pkg::add_package::*;
 use pkg::remove_package::*;
@@ -288,15 +288,37 @@ fn main() {
 
             match compile_cmd {
                 ("app", sub_matches) => {
-                    let source_code_path = sub_matches
-                        .get_one::<String>("JULIA_PROJECT_PATH")
-                        .expect("couldn't parse command line input in compile app command");
+                    // Check for positional arguments (first, app source path), if the user provided it; if not, ask for it with the get_... functions...
+                    if let Some(_) = sub_matches.get_one::<String>("JULIA_PROJECT_PATH") {
+                        let source_code_path = sub_matches
+                            .get_one::<String>("JULIA_PROJECT_PATH")
+                            .expect("couldn't parse command line input in compile app command");
 
-                    let target_directory_path = sub_matches
-                        .get_one::<String>("COMPILED_APP_PATH_TARGET")
-                        .expect("couldn't parse command line input in compile app command");
+                        // check for second positional argment, if the user provided it...
+                        if let Some(_) = sub_matches.get_one::<String>("COMPILED_APP_PATH_TARGET") {
+                            let target_directory_path = sub_matches
+                                .get_one::<String>("COMPILED_APP_PATH_TARGET")
+                                .expect("couldn't parse command line input in compile app command");
 
-                    compile_app(&mut julia, source_code_path, target_directory_path);
+                            compile_app(&mut julia, source_code_path, target_directory_path);
+                        } else {
+                            let source_code_path = sub_matches
+                                .get_one::<String>("JULIA_PROJECT_PATH")
+                                .expect("couldn't parse command line input in compile app command");
+                            let target_directory_path = get_app_compile_target_path();
+
+                            compile_app(
+                                &mut julia,
+                                source_code_path,
+                                target_directory_path.as_str(),
+                            );
+                        }
+                    } else {
+                        // if neither source nor target path is provided, get it from user input
+                        let source_path = get_app_source_path();
+                        let target_path = get_app_compile_target_path();
+                        compile_app(&mut julia, source_path.as_str(), target_path.as_str())
+                    }
                 }
                 _ => {
                     unreachable!("Unsupported compilation subcommand",)

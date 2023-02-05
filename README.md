@@ -25,6 +25,9 @@ The available commands are summarized here:
     - script
     - app (*in progress)
     <!-- - package (*yet to be implemented) -->
+  - compile | create
+    - app (*in progress)
+    <!-- - sysimage -->
   - jl
     - repl | run
     - pluto | notebook | nb

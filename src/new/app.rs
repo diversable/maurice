@@ -7,14 +7,27 @@
 use capitalize::Capitalize;
 use dialoguer::{console::Term, theme::ColorfulTheme, Input};
 use jlrs::prelude::*;
-use std::env::{self};
+use std::env::{self, current_dir};
 use std::fs::{DirBuilder, File};
 use std::io::prelude::*;
-use std::path;
+use std::path::{self, PathBuf};
 
 const JL_RUNTESTS_CONTENTS: &str = r###"module Test
+using Test
+
+include("../src/Main.jl")
+
 
 # write tests here...
+@testset "Main functions work" begin
+    username = "Alice"
+
+    @testset "Main.main(?username) methods work" begin
+        @test Main.main() == println("Hello, app user!")
+        @test Main.main(username) == println("Hello, Alice !!!")
+    end
+
+end
 
 end # module Test
 "###;
@@ -39,7 +52,7 @@ end # module Test
 pub fn new_app_ask_name(julia: &mut Julia) {
     let input_app_name: String = Input::new()
         .with_prompt("What name would you like to give your app?")
-        .interact_text()
+        .interact()
         .unwrap_or("Main".to_string());
 
     let app_name = input_app_name;
@@ -122,23 +135,36 @@ pub fn new_app_w_name(julia: &mut Julia, app_name: &str) {
     let jl_app_main_mod_part2: &str = r###"
 include("Main.jl")
 
-# Write the necessary functionality for your app using the `Main.jl` file / `main()` function; this file is primarily set up for compiling your app with the PackageCompiler.jl infrastructure
+# Write the necessary functionality for your app using the `Main.jl` file / `main()` function; this file is primarily set up for compiling your app with the PackageCompiler.jl infrastructure.
+# If you need to handle arguments from the command line for your app, a brief demonstration is given below..
 
-function julia_main()::Cint
+function handle_command_line(ARGS)
+    # do something based on ARGS? ARGS will come from the command line when you run your app..
+
     try
-		# use the Main module, and call the main() function
-        Main.main()
+        if isempty(ARGS)
+            # use the Main module, and call the main() function
+            Main.main()
+        else
+            # use the Main module, and call the main() function with 1 arg from cmd line
+            Main.main(ARGS[1])
+        end
     catch
         Base.invokelatest(Base.display_error, Base.catch_stack())
-		# return 1 means `return with 1 error' - this is useful for piping the output of one app into another on the command line
+        # return 1 means `return with 1 error' - this is useful for piping the output of one app into another on the command line
         return 1
     end
-	# return 0 means 'returned with 0 errors'
+    # return 0 means 'returned with 0 errors'
     return 0
 end
 
+function julia_main()::Cint
+    handle_command_line(ARGS)
+end
+
+# If this app is run as a script with Julia, handle the execution.
 if abspath(PROGRAM_FILE) == @__FILE__
-    julia_main()
+    handle_command_line(ARGS)
 end
 
 end # module "###;
@@ -169,10 +195,43 @@ function main()
 	println("Hello, app user!")
 end
 
+function main(username::String)
+    println("Hello, $username !!!")
+end
+
 end # module Main"###;
 
     write!(user_main_file, "{}", user_main_file_contents)
         .expect("could not write user main file contents for app....");
 
     println!("\n{:?}", activate.unwrap());
+}
+
+pub fn get_app_source_path() -> String {
+    let app_source_path = Input::<String>::new()
+        .with_prompt("Please enter the (relative or absolute) path to the Julia source code you want to compile into an app")
+        .interact()
+        .expect("Must provide a path to the source Julia code you want to compile into an app!");
+    app_source_path
+}
+
+pub fn get_app_compile_target_path() -> String {
+    let current_dir = current_dir().expect("couldn't parse current directory");
+    let compiled_path_segment = PathBuf::from("./compiled");
+
+    let mut compiled_path = PathBuf::new();
+    compiled_path.push(current_dir);
+    compiled_path.push(compiled_path_segment);
+
+    let default_path = compiled_path
+        .to_str()
+        .expect("could not construct string from PathBuf")
+        .to_string();
+
+    let compiled_app_path = Input::<String>::new()
+        .with_prompt("Please enter a path for where your compiled app should be output")
+        .interact()
+        .unwrap_or(default_path);
+
+    compiled_app_path
 }
