@@ -249,19 +249,26 @@ end
 
 function make_app_in_target_dir(app_name::String)
     try
-        Pkg.generate(app_name)
-        Pkg.activate(app_name)
-        generate_docs(app_name)
-
+        # Ensure PackageCompiler is in the global environment stack
         if ("PackageCompiler" in keys(Pkg.project().dependencies))
-            println("PackageCompiler is ready...")
+            println("PackageCompiler is ready to make your app...")
         else
             Pkg.add("PackageCompiler")
         end
 
+        println("Getting your app ready...")
+        Pkg.generate(app_name)
+        Pkg.activate(app_name)
+        try
+            generate_docs(app_name)
+        catch
+            println("couldn't generate documentation folder for your app...")
+        end
 
-        # TODO: create the rest of the App req's - eg.
+        return "success"
+
     catch
+        return "Could not generate app"
     end
 end
 
@@ -271,7 +278,7 @@ end
 
 #     # Must add a package in order to generate Project.toml file
 #     # So... add a package that *everyone* should use in their packages:
-#       yup
+
 
 #     Pkg.add("Documenter")
 # end
@@ -288,6 +295,31 @@ end
 # end
 
 end # module New
+
+module Create
+using Pkg
+
+# Ensure PackageCompiler is in the global environment stack
+if ("PackageCompiler" in keys(Pkg.project().dependencies))
+    println("PackageCompiler is ready to make your app...")
+else
+    Pkg.add("PackageCompiler")
+end
+using PackageCompiler
+
+function compile_app(source_code_path::String, target_directory_path::String)
+    println(source_code_path * ": source dir path from Rust")
+    println(target_directory_path * ": target dir path from Rust")
+    try
+        create_app(source_code_path, target_directory_path)
+        return "Your app has been compiled! You can find the executable in the $target_directory_path/bin folder"
+    catch
+        return "Could not compile app :(  Please provide valid source and target directories"
+    end
+
+end
+
+end # module Create
 
 end # module Gaston
 "###;

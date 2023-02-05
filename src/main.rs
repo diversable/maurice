@@ -14,6 +14,7 @@ use nix::unistd::execvp;
 
 use dirs::home_dir;
 
+mod compile;
 mod jl_command;
 mod julia;
 // mod lib;
@@ -23,6 +24,8 @@ mod pkg;
 use jl_command::pluto_nb::check_pluto_nb_is_installed;
 use julia::{write_julia_script_to_disk, JULIA_FILE_CONTENTS};
 // use lib::run_pluto_nb;
+use compile::application::{self, compile_app};
+use new::app::{new_app_ask_name, new_app_w_name};
 use new::script::{new_script_ask_name, new_script_w_name};
 use pkg::add_package::*;
 use pkg::remove_package::*;
@@ -124,10 +127,26 @@ fn cli() -> Command {
                 .subcommand(
                     Command::new("script")
                         .arg(arg!([NAME_FOR_NEW_SCRIPT]))
-                        .about("create a new Julia environment in the current directory (default), or add a path to create an environment in a different directory")
+                        .about("Create a new script, using the name the user provides")
 
                 )
+                .subcommand(
+                    Command::new("app")
+                    .arg(arg!([APP_NAME]))
+                    .about("Create a new app using the name the user provides")
+                    .visible_alias("application")
+                )
         )
+        .subcommand(Command::new("compile")
+            .visible_alias("create")
+            .about("create apps and system images (sysimages)")
+                .subcommand(Command::new("app")
+                    .about("compiles an app; requires 2 args: a path to the source code, and a path to where the compiled app will be placed")
+                    .visible_alias("application")
+                    .arg(arg!([JULIA_PROJECT_PATH]))
+                    .arg(arg!([COMPILED_APP_PATH_TARGET]))
+            )
+    )
 }
 
 pub fn run_pluto_nb(julia: &mut Julia) {
@@ -211,18 +230,51 @@ fn main() {
                 // if you get an argument, call env with the arg. Otherwise, activate environment in current directory
                 ("script", sub_matches) => {
                     if let Some(_) = sub_matches.get_one::<String>("NAME_FOR_NEW_SCRIPT") {
-                        let activate_env = sub_matches.get_one::<String>("NAME_FOR_NEW_SCRIPT");
+                        let script_name = sub_matches.get_one::<String>("NAME_FOR_NEW_SCRIPT");
 
                         new_script_w_name(
                             &mut julia,
-                            activate_env.expect("tried and failed to create a new script..."),
+                            script_name.expect("tried and failed to create a new script..."),
                         );
                     } else {
                         new_script_ask_name(&mut julia);
                     }
                 }
+                ("app", sub_matches) => {
+                    if let Some(_) = sub_matches.get_one::<String>("APP_NAME") {
+                        let app_name = sub_matches.get_one::<String>("APP_NAME");
+
+                        new_app_w_name(
+                            &mut julia,
+                            app_name.expect("tried and failed to create a new app..."),
+                        );
+                    } else {
+                        new_app_ask_name(&mut julia);
+                    }
+                }
+
                 _ => {
                     unreachable!("Unsupported `new` subcommand",)
+                }
+            }
+        }
+        Some(("compile", sub_matches)) => {
+            let compile_cmd = sub_matches.subcommand().unwrap();
+
+            match compile_cmd {
+                ("app", sub_matches) => {
+                    let source_code_path = sub_matches
+                        .get_one::<String>("JULIA_PROJECT_PATH")
+                        .expect("couldn't parse command line input in compile app command");
+
+                    let target_directory_path = sub_matches
+                        .get_one::<String>("COMPILED_APP_PATH_TARGET")
+                        .expect("couldn't parse command line input in compile app command");
+
+                    compile_app(&mut julia, source_code_path, target_directory_path);
+                }
+                _ => {
+                    unreachable!("Unsupported compilation subcommand",)
                 }
             }
         }

@@ -19,7 +19,7 @@ pub fn new_script_ask_name(julia: &mut Julia) {
         .interact_text()
         .unwrap_or("Main".to_string());
 
-    let script_name = input_script_name.capitalize();
+    let script_name = input_script_name;
     new_script_w_name(julia, script_name.as_str());
 }
 
@@ -27,7 +27,8 @@ pub fn new_script_ask_name(julia: &mut Julia) {
 pub fn new_script_w_name(julia: &mut Julia, script_name: &str) {
     println!("\nActivating environment \"{}\"\n", &script_name);
 
-    let script_name = script_name.to_string();
+    // Ensure script names are capitalized, as per standard Julia practice
+    let script_name = script_name.to_string().capitalize();
     let activate = julia
         .scope(|mut frame| {
             let jl_module_main = Module::main(&mut frame);
