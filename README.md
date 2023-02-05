@@ -28,7 +28,7 @@ The available commands are summarized here:
   - jl
     - repl | run
     - pluto | notebook | nb
-    - edit
+    - edit | code
   - pkg
     - status | list | ls
     - add [package_name]
@@ -86,7 +86,7 @@ Currently, the CLI functions include:
 => _starts Pluto.jl, the notebook environment written in native Julia. If Pluto is not installed, gsn will install it for you._
 
 
-> gsn jl edit
+> gsn jl (edit | code)
 
 => _open VSCode with the current directory, and start up a Julia process in the terminal for working / testing interactively as well; currently, VSCode must already be installed and on the the user's $PATH_
 

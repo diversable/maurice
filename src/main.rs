@@ -62,6 +62,7 @@ fn cli() -> Command {
                 // start the default editor / VSCode ?
                 .subcommand(
                     Command::new("edit")
+                    .visible_alias("code")
                     .about("Both (a) starts VSCode using the current directory, and (b) starts the Julia REPL in the terminal for interactive use / testing")
                 ),
         )
