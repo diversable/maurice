@@ -165,6 +165,7 @@ else
     Pkg.add("DocumenterTools")
     Pkg.add("PkgTemplates")
     Pkg.add("Test")
+    Pkg.add("PackageCompiler")
 end
 
 using Documenter
@@ -203,12 +204,31 @@ function make_env_in_current_dir()
 
 end
 
+function make_app_in_target_dir(app_name::String)
+    try
+        Pkg.generate(app_name)
+        Pkg.activate(app_name)
+        generate_docs(app_name)
+
+        if ("PackageCompiler" in keys(Pkg.project().dependencies))
+            println("PackageCompiler is ready...")
+        else
+            Pkg.add("PackageCompiler")
+        end
+
+
+        # TODO: create the rest of the App req's - eg.
+    catch
+    end
+end
+
 # function make_project_in_defined_directory(directory::String)
 #     install_pkgtemplates()
 #     Pkg.activate(".")
 
 #     # Must add a package in order to generate Project.toml file
 #     # So... add a package that *everyone* should use in their packages:
+
 
 #     Pkg.add("Documenter")
 # end

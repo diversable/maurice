@@ -1,6 +1,9 @@
 #![allow(dead_code)]
 
 use std::ffi::{CString, OsString};
+use std::fs;
+use std::io;
+use std::io::Read;
 use std::path::PathBuf;
 use std::process;
 
@@ -18,7 +21,7 @@ mod new;
 mod pkg;
 
 use jl_command::pluto_nb::check_pluto_nb_is_installed;
-use julia::write_julia_script_to_disk;
+use julia::{write_julia_script_to_disk, JULIA_FILE_CONTENTS};
 // use lib::run_pluto_nb;
 use new::script::{new_script_ask_name, new_script_w_name};
 use pkg::add_package::*;
@@ -152,18 +155,39 @@ fn main() {
     // This is safe because the included code doesn't do any strange things.
 
     // TODO! update this check to ensure that the contents of the Gaston.jl file matches what's in the julia/mod.rs -> JULIA_FILE_CONTENTS &str...
-    unsafe {
-        if gaston_jl_path.exists() {
-            // println!("Gaston path exists @: {:?}", gaston_jl_path);
-            julia
-                .include(gaston_jl_path)
-                .expect("Could not include file");
-        } else {
-            println!("Gaston.jl file not found. Writing Gaston.jl file to `$HOME/.julia/gaston/Gaston.jl`", );
 
-            write_julia_script_to_disk()
-                .expect("couldn't write Gaston.jl file to $HOME/.julia/gaston/Gaston.jl");
+    if gaston_jl_path.exists() {
+        let latest_jl_file_contents = JULIA_FILE_CONTENTS.to_string();
 
+        let gaston_jl_file_contents =
+            fs::read_to_string(&gaston_jl_path).expect("Couldn't read Gaston.jl file...");
+
+        let update_file_maybe = latest_jl_file_contents.eq(&gaston_jl_file_contents);
+
+        unsafe {
+            if update_file_maybe {
+                println!("Gaston path exists @: {:?}", gaston_jl_path);
+                julia
+                    .include(gaston_jl_path)
+                    .expect("Could not include file");
+            } else {
+                println!("Ensuring you have the latest Gaston.jl file. Writing Gaston.jl file to `$HOME/.julia/gaston/Gaston.jl`", );
+
+                write_julia_script_to_disk()
+                    .expect("couldn't write Gaston.jl file to $HOME/.julia/gaston/Gaston.jl");
+
+                julia
+                    .include(gaston_jl_path)
+                    .expect("Could not include file - please file a bug report!");
+            }
+        }
+    } else {
+        println!("Couldn't find Gaston.jl file. Writing Gaston.jl file to `$HOME/.julia/gaston/Gaston.jl`", );
+
+        write_julia_script_to_disk()
+            .expect("couldn't write Gaston.jl file to $HOME/.julia/gaston/Gaston.jl");
+
+        unsafe {
             julia
                 .include(gaston_jl_path)
                 .expect("Could not include file - please file a bug report!");

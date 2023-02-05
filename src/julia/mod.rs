@@ -26,8 +26,12 @@ pub fn write_julia_script_to_disk() -> std::io::Result<()> {
     gaston_file_path.push(&home_dir);
     gaston_file_path.push(&julia_file_path);
 
-    let _dotjulia_gaston_dir =
-        fs::create_dir(gaston_folder).expect("Couldn't create $HOME/.julia/gaston/  directory");
+    if gaston_folder.exists() {
+        // println!("Found .julia/gaston/ folder")
+    } else {
+        let _dotjulia_gaston_dir =
+            fs::create_dir(gaston_folder).expect("Couldn't create $HOME/.julia/gaston/  directory");
+    }
 
     // create Gaston.jl file in `$HOME/.julia/gaston/`
     let mut gaston_jl_file = File::create(gaston_file_path)?;
@@ -36,7 +40,7 @@ pub fn write_julia_script_to_disk() -> std::io::Result<()> {
     write!(gaston_jl_file, "{}", JULIA_FILE_CONTENTS)
 }
 
-const JULIA_FILE_CONTENTS: &str = r###"
+pub const JULIA_FILE_CONTENTS: &str = r###"
 module Gaston
 
 module Jl_Command
@@ -204,6 +208,7 @@ else
     Pkg.add("DocumenterTools")
     Pkg.add("PkgTemplates")
     Pkg.add("Test")
+    Pkg.add("PackageCompiler")
 end
 
 using Documenter
@@ -242,12 +247,31 @@ function make_env_in_current_dir()
 
 end
 
+function make_app_in_target_dir(app_name::String)
+    try
+        Pkg.generate(app_name)
+        Pkg.activate(app_name)
+        generate_docs(app_name)
+
+        if ("PackageCompiler" in keys(Pkg.project().dependencies))
+            println("PackageCompiler is ready...")
+        else
+            Pkg.add("PackageCompiler")
+        end
+
+
+        # TODO: create the rest of the App req's - eg.
+    catch
+    end
+end
+
 # function make_project_in_defined_directory(directory::String)
 #     install_pkgtemplates()
 #     Pkg.activate(".")
 
 #     # Must add a package in order to generate Project.toml file
 #     # So... add a package that *everyone* should use in their packages:
+#       yup
 
 #     Pkg.add("Documenter")
 # end
