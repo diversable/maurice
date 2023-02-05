@@ -213,7 +213,7 @@ fn main() {
 
         unsafe {
             if update_file_maybe {
-                println!("Gaston path exists @: {:?}", gaston_jl_path);
+                // println!("Gaston path exists @: {:?}", gaston_jl_path);
                 julia
                     .include(gaston_jl_path)
                     .expect("Could not include file");
