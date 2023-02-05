@@ -29,6 +29,8 @@ use pkg::remove_package::*;
 use pkg::status::*;
 use pkg::update::*;
 
+use dialoguer;
+
 fn cli() -> Command {
     Command::new("gsn")
         .about("\nGaston (gsn): The Julia project manager")
@@ -328,21 +330,29 @@ fn main() {
                     // println!("sub_matches: {:?}", sub_matches);
                 }
                 ("add", sub_matches) => {
-                    let add_one_pkg = sub_matches.get_one::<String>("PACKAGE_NAME");
+                    if let Some(add_one_pkg) = sub_matches.get_one::<String>("PACKAGE_NAME") {
+                        add_one_package(&mut julia, add_one_pkg);
+                    } else {
+                        let package_name = dialoguer::Input::<String>::new()
+                            .with_prompt("Which package would you like to add?")
+                            .interact()
+                            .expect("Must add a package name to add a package!");
 
-                    add_one_package(
-                        &mut julia,
-                        add_one_pkg.expect("Must provide a package name to add a package!"),
-                    );
+                        add_one_package(&mut julia, &package_name);
+                    }
                 }
                 // SHORT FORM of remove (one) package
                 ("rm", sub_matches) => {
-                    let remove_one_pkg = sub_matches.get_one::<String>("PACKAGE_NAME");
+                    if let Some(remove_one_pkg) = sub_matches.get_one::<String>("PACKAGE_NAME") {
+                        remove_one_package(&mut julia, remove_one_pkg);
+                    } else {
+                        let package_name = dialoguer::Input::<String>::new()
+                            .with_prompt("Which package would you like to remove?")
+                            .interact()
+                            .expect("Must provide a package name to remove a package!");
 
-                    remove_one_package(
-                        &mut julia,
-                        remove_one_pkg.expect("must provide a package name to remove the package!"),
-                    );
+                        remove_one_package(&mut julia, &package_name);
+                    }
                 }
                 // LONG FORM of remove (one) package
                 ("remove", sub_matches) => {
