@@ -24,7 +24,7 @@ The available commands are summarized here:
   - new | generate
     - script
     - app (*in progress)
-    - package (*yet to be implemented)
+    <!-- - package (*yet to be implemented) -->
   - jl
     - repl | run
     - pluto | notebook | nb
@@ -35,70 +35,70 @@ The available commands are summarized here:
     - remove | rm | delete [package_name]
     - update [?package_name]
 
-
+NOTE: Using partial commands also works with this CLI tool, so using a command like `gsn p up` will work the same as the command `gsn pkg update` and will update all packages; `gsn j ed` will work the same as `gsn jl edit` and will start up VSCode as well as start the Julia process in the terminal for you.
 
 Currently, the CLI functions include:
 
 
 > gsn (new | generate)
 
-_create a new environment & project structure; the CLI will ask for a project name_
+=> _create a new environment & project structure; the CLI will ask for a project name_
 
 
 > gsn (new | generate) [?script_name]
 
-_same as above: create a new environment & project structure; the CLI will ask for a project name if one is not provided_
+=> _same as above: create a new environment & project structure; the CLI will ask for a project name if one is not provided_
 
 
 > gsn jl
 
-_start Julia with the project in the current directory activated (default), or run the Julia Repl with the global env. if not in a Julia project directory_
+=> _start Julia with the project in the current directory activated (default), or run the Julia Repl with the global env. if not in a Julia project directory_
 
 
 > gsn jl (repl | run)
 
-_same as above: start Julia with the project in the current directory activated (default), or run the Julia Repl with the global env. if not in a Julia project directory_
+=> _same as above: start Julia with the project in the current directory activated (default), or run the Julia Repl with the global env. if not in a Julia project directory_
 
 
 > gsn jl (pluto | notebook | nb)
 
-_starts Pluto.jl, the notebook environment written in native Julia. If Pluto is not installed, gsn will install it for you._
+=> _starts Pluto.jl, the notebook environment written in native Julia. If Pluto is not installed, gsn will install it for you._
 
 
 > gsn jl edit
 
-_open VSCode with the current directory, and start up a Julia process in the terminal for working / testing interactively as well; currently, VSCode must already be installed and on the the user's $PATH_
+=> _open VSCode with the current directory, and start up a Julia process in the terminal for working / testing interactively as well; currently, VSCode must already be installed and on the the user's $PATH_
 
 
 > gsn pkg
 
-_get status of installed packages. NB: all commands default to current local environment for adding/removing packages, and fall back to global environment if not working in a project directory_
+=> _get status of installed packages. NB: all commands default to current local environment for adding/removing packages, and fall back to global environment if not working in a project directory_
 
 
 > gsn pkg (status | list | ls)
 
-_get status of installed packages / list installed packages._
+=> _get status of installed packages / list installed packages._
 
 
 > gsn pkg add [package_name]
 
-_add a package from a Julia registry_
+=> _add a package from a Julia registry_
 
 
 > gsn pkg (remove | rm | delete) [package_name]
 
-_remove an installed package; defaults to operating on local project environment, and falls back to global environment_
+=> _remove an installed package; defaults to operating on local project environment, and falls back to global environment_
 
 
 > gsn pkg update [?package_name]
 
-__(update all packages if the 'package_name' is not provided, or update specific package in local environment if 'package_name' is given_
+=> _update all packages if the 'package_name' is not provided, or update specific package in local environment if 'package_name' is given_
 
 
 
 
 
-Using partial commands also works with this CLI tool, so using a command like `gsn p up` will work the same as the command `gsn pkg update` and will update all packages; `gsn j ed` will work the same as `gsn jl edit` and will start up VSCode as well as start the Julia process in the terminal for you.
+
 
 ---
 
