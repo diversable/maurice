@@ -3,21 +3,29 @@ module Gaston
 module Jl_Command
 using Pkg
 
+
 # Install Pluto Notebooks in global environment
-function install_or_update_pluto_nb()
+function check_pluto_is_installed_jl()
 
     # Activate global scope
     Pkg.activate()
 
-    try
-        # update Pluto Notebook environment
-        Pkg.update("Pluto")
-    catch
-        # Add Pluto Notebook environment
+    if "Pluto" in keys(Pkg.project().dependencies)
+        println("Pluto is installed")
+    else
+        println("Adding Pluto to your global environment...")
         Pkg.add("Pluto")
     end
 
-    return "Pluto Notebooks is up to date"
+    # try
+    #     # update Pluto Notebook environment
+    #     Pkg.update("Pluto")
+    # catch
+    #     # Add Pluto Notebook environment
+    #     Pkg.add("Pluto")
+    # end
+
+    return "Pluto Notebooks is ready"
 end
 
 end # jl_command

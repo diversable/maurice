@@ -13,11 +13,13 @@ use dirs::home_dir;
 
 mod jl_command;
 mod julia;
+// mod lib;
 mod new;
 mod pkg;
 
-use jl_command::pluto_nb::install_or_update_pluto;
+use jl_command::pluto_nb::check_pluto_nb_is_installed;
 use julia::write_julia_script_to_disk;
+// use lib::run_pluto_nb;
 use new::script::{new_script_ask_name, new_script_w_name};
 use pkg::add_package::*;
 use pkg::remove_package::*;
@@ -122,6 +124,16 @@ fn cli() -> Command {
         )
 }
 
+pub fn run_pluto_nb(julia: &mut Julia) {
+    check_pluto_nb_is_installed(julia);
+
+    let _output = process::Command::new("julia")
+        .arg("-E")
+        .arg("using Pluto; Pluto.run()")
+        .spawn()
+        .expect("Could not run Julia -> Pluto notebook");
+}
+
 fn main() {
     // If Julia is already installed...
     //
@@ -199,21 +211,15 @@ fn main() {
                     //
                     //
 
-                    install_or_update_pluto(&mut julia);
+                    run_pluto_nb(&mut julia);
 
-                    let _output = process::Command::new("julia")
-                        .arg("-E")
-                        .arg("using Pluto; Pluto.run()")
-                        .spawn()
-                        .expect("Could not run Julia -> Pluto notebook");
+                    // check_pluto_nb_is_installed(&mut julia);
 
-                    // if let Some(_) = output.stdout {
-                    //     process::Command::new("julia")
-                    //         .arg("-E")
-                    //         .arg("using Pluto; Pluto.run()")
-                    //         .spawn()
-                    //         .expect("Could not run Julia -> Pluto notebook");
-                    // };
+                    // let _output = process::Command::new("julia")
+                    //     .arg("-E")
+                    //     .arg("using Pluto; Pluto.run()")
+                    //     .spawn()
+                    //     .expect("Could not run Julia -> Pluto notebook");
                 }
 
                 // };
