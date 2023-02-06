@@ -9,6 +9,8 @@ use clap::{arg, ColorChoice, Command};
 use jlrs::prelude::*;
 // TODO! The `nix` crate is Unix-only! Find a Windows-compatible way to provide the same functionality!
 use nix::unistd::execvp;
+// use xshell::{cmd, Shell};
+use duct::cmd;
 
 use dirs::home_dir;
 
@@ -184,7 +186,7 @@ pub fn run_pluto_nb(julia: &mut Julia) {
     .expect("failed to exec Julia process...");
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     // TODO! If Julia is not installed, install Julia using juliaup:
     //
     // Mac & Linux:
@@ -193,6 +195,23 @@ fn main() {
     // Windows:
     // winget install julia -s msstore
     //
+    let home_dir = home_dir().expect("Couldn't find the user's home directory");
+    let mut dot_julia_dir = PathBuf::new();
+    dot_julia_dir.push(&home_dir);
+    dot_julia_dir.push(".julia");
+
+    // if $HOME/.julia folder exists, then set to false and skip Julia installation; if .julia folder doesn't exist, set to true and execute the 'if' block to install Julia...
+    // if !(dot_julia_dir.exists()) {
+    if dot_julia_dir.exists() {
+        // Install Julia on Linux / MacOS if the .julia directory doesn't exist
+        cmd!("echo", "hello from gt - you can install Julia now...").run()?;
+        cmd!("curl", "-fsSL", "https://install.julialang.org")
+            .pipe(cmd!("sh"))
+            .run()?;
+
+        // TODO! For Windows..
+        // cmd!(sh, "winget install julia -s msstore").run()?;
+    }
 
     // If Julia is already installed...
     //
@@ -201,7 +220,6 @@ fn main() {
     let mut frame = StackFrame::new();
     let mut julia = julia_pending.instance(&mut frame);
 
-    let home_dir = home_dir().expect("Couldn't find the user's home directory");
     let julia_dir = PathBuf::from(".julia/gaston/Gaston.jl");
     let mut gaston_jl_path = PathBuf::new();
     gaston_jl_path.push(home_dir);
@@ -504,6 +522,8 @@ fn main() {
         // If all subcommands are defined above, anything else is unreachable!
         _ => unreachable!(),
     }
+
+    Ok(())
 }
 
 //---------------------------------------------------------------------------------
