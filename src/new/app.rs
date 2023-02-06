@@ -103,7 +103,7 @@ pub fn new_app_w_name(julia: &mut Julia, app_name: &str) {
     DirBuilder::new()
         .recursive(true)
         .create(&tests_dir_path)
-        .expect("Could not create `tests` directory");
+        .expect("Could not create `test` directory");
 
     let mut tests_file_path = path::PathBuf::new();
     tests_file_path.push(tests_dir_path);
