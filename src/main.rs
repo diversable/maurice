@@ -10,6 +10,10 @@ use jlrs::prelude::*;
 // TODO! The `nix` crate is Unix-only! Find a Windows-compatible way to provide the same functionality!
 use nix::unistd::execvp;
 // use xshell::{cmd, Shell};
+use anyhow::{anyhow, Context, Result};
+use dialoguer;
+use dialoguer::theme::ColorfulTheme;
+use dialoguer::{console::Term, MultiSelect, Select};
 use duct::cmd;
 
 use dirs::home_dir;
@@ -33,8 +37,6 @@ use pkg::add_package::*;
 use pkg::remove_package::*;
 use pkg::status::*;
 use pkg::update::*;
-
-use dialoguer;
 
 fn cli() -> Command {
     Command::new("gt")
@@ -202,18 +204,40 @@ fn main() -> anyhow::Result<()> {
 
     // if $HOME/.julia folder exists, then set to false and skip Julia installation; if .julia folder doesn't exist, set to true and execute the 'if' block to install Julia...
     if !(dot_julia_dir.exists()) {
+        // for debugging...
         // if dot_julia_dir.exists() {
-        println!("Couldn't find Julia on your system; installing now...");
-        // Install Julia on Linux / MacOS if the .julia directory doesn't exist
-        cmd!("echo", "hello from gt - you can install Julia now...").run()?;
-        cmd!("curl", "-fsSL", "https://install.julialang.org")
-            .pipe(cmd!("sh"))
-            .run()?;
 
-        // TODO! For Windows..
-        // cmd!(sh, "winget install julia -s msstore").run()?;
+        println!("Couldn't find Julia on your system...");
 
-        println!("Please ensure that Julia is on your $PATH before continuing!",);
+        let install_options = vec!["Yes", "No"];
+        let choice = Select::with_theme(&ColorfulTheme::default())
+            .with_prompt("Would you like to install the Julia language?")
+            .items(&install_options)
+            .default(0)
+            .interact_on_opt(&Term::stderr())?;
+
+        // match on user's choice of yes / no to install Julia or not...
+        match choice {
+            // user selects "Yes"
+            Some(0) => {
+                // Install Julia on Linux / MacOS -- iff the .julia directory doesn't exist
+                cmd!("curl", "-fsSL", "https://install.julialang.org")
+                    .pipe(cmd!("sh"))
+                    .run()?;
+
+                // TODO! For Windows..
+                // cmd!(sh, "winget install julia -s msstore").run()?;
+
+                // TODO! Make this better / test this!!!
+                println!("Please ensure that Julia is on your $PATH before continuing!",);
+            }
+            // user selects "No"
+            Some(1) => {
+                println!("You selected {:?}. Julia is required for this tool to work; please install Julia and add it to your $PATH before continuing...", install_options[1]);
+                return Err(anyhow!("Unable to proceed; no Julia installed"));
+            }
+            _ => unreachable!(),
+        }
     }
 
     // If Julia is already installed...
