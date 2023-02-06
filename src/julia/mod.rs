@@ -54,7 +54,7 @@ function check_pluto_is_installed_jl()
     Pkg.activate()
 
     if "Pluto" in keys(Pkg.project().dependencies)
-        println("Pluto is installed")
+        # println("Pluto is installed")
     else
         println("Adding Pluto to your global environment...")
         Pkg.add("Pluto")
@@ -201,7 +201,7 @@ using Pkg
 Pkg.activate()
 
 if ("Documenter" in keys(Pkg.project().dependencies) && "DocumenterTools" in keys(Pkg.project().dependencies) && "PkgTemplates" in keys(Pkg.project().dependencies) && "Test" in keys(Pkg.project().dependencies))
-    println("Dependencies are ready")
+    # println("Dependencies are ready")
 else
     println("Adding the packages necessary to set up your project...")
     Pkg.add("Documenter")

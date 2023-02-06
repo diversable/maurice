@@ -17,8 +17,10 @@ dialoguer = "0.10.3"
 # console = "0.15.5"
 # ctrlc = "3.2.4"
 dirs = "4.0.0"
+duct = "0.13.6"
 
 jlrs = { version = "0.17.0", features = ["sync-rt"] }
+# xshell = "0.2.3"
 
 # normpath = "1.1.0"
 # semver = "1.0.16"

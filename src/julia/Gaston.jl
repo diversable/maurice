@@ -158,7 +158,7 @@ using Pkg
 Pkg.activate()
 
 if ("Documenter" in keys(Pkg.project().dependencies) && "DocumenterTools" in keys(Pkg.project().dependencies) && "PkgTemplates" in keys(Pkg.project().dependencies) && "Test" in keys(Pkg.project().dependencies))
-    println("Dependencies are ready")
+    # println("Dependencies are ready")
 else
     println("Adding the packages necessary to set up your project...")
     Pkg.add("Documenter")
