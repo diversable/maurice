@@ -13,9 +13,7 @@ The CLI is currently not fully functional / tested on Windows; it works well on 
 
 Note:
 
-The Julia language must be installed and on the user's path for this software to function properly. If Julia is not installed, the `gt` tool will install Julia for you (on Linux or MacOS).
-
-<!-- FYI: the easiest way to install Julia is to use [the `Juliaup` command line tool](https://github.com/JuliaLang/juliaup). -->
+The Julia language must be installed and on the user's path for this software to function properly. If Julia is not installed, the `gt` tool will ask if you want to install Julia (on Linux or MacOS). Julia install will be performed with [the `juliaup` command line tool](https://github.com/JuliaLang/juliaup).
 
 ---
 
