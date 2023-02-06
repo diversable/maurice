@@ -185,6 +185,15 @@ pub fn run_pluto_nb(julia: &mut Julia) {
 }
 
 fn main() {
+    // TODO! If Julia is not installed, install Julia using juliaup:
+    //
+    // Mac & Linux:
+    // curl -fsSL https://install.julialang.org | sh
+    //
+    // Windows:
+    // winget install julia -s msstore
+    //
+
     // If Julia is already installed...
     //
     let mut julia_pending = unsafe { RuntimeBuilder::new().start().expect("Could not init Julia") };
