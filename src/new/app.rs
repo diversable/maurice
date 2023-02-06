@@ -98,7 +98,7 @@ pub fn new_app_w_name(julia: &mut Julia, app_name: &str) {
     // Create Tests directory & run_tests.jl file
     let mut tests_dir_path = path::PathBuf::new();
     tests_dir_path.push(&current_dir);
-    tests_dir_path.push("./tests");
+    tests_dir_path.push("./test");
 
     DirBuilder::new()
         .recursive(true)
@@ -107,7 +107,7 @@ pub fn new_app_w_name(julia: &mut Julia, app_name: &str) {
 
     let mut tests_file_path = path::PathBuf::new();
     tests_file_path.push(tests_dir_path);
-    tests_file_path.push("./run_tests.jl");
+    tests_file_path.push("./runtests.jl");
     let mut jl_runtests_file =
         File::create(&tests_file_path).expect("could not create runtests.jl file");
 

@@ -63,16 +63,16 @@ pub fn new_script_w_name(julia: &mut Julia, script_name: &str) {
 
     let mut tests_dir_path = path::PathBuf::new();
     tests_dir_path.push(&current_dir);
-    tests_dir_path.push("./tests");
+    tests_dir_path.push("./test");
 
     DirBuilder::new()
         .recursive(true)
         .create(&tests_dir_path)
-        .expect("Could not create `tests` directory");
+        .expect("Could not create `test` directory");
 
     let mut tests_file_path = path::PathBuf::new();
     tests_file_path.push(tests_dir_path);
-    tests_file_path.push("./run_tests.jl");
+    tests_file_path.push("./runtests.jl");
     let mut jl_runtests_file =
         File::create(&tests_file_path).expect("could not create runtests.jl file");
 
