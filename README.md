@@ -4,20 +4,22 @@ NOTICE:
 
 This software is under development and is currently in the 'Alpha' phase.
 
-_Pre-Requisites_:
 
-Currently, the Julia language must already be installed and on the user's path for this software to function properly.
-
-FYI: the easiest way to install Julia is to use [the `Juliaup` command line tool](https://github.com/JuliaLang/juliaup).
 
 
 _Windows Compatibility_:
 
 The CLI is currently not fully functional / tested on Windows; it works well on Linux though (and presumably Windows' WSL as well as MacOS, too).
 
+Note:
+
+The Julia language must be installed and on the user's path for this software to function properly. If Julia is not installed, the `gt` tool will install Julia for you (on Linux or MacOS).
+
+<!-- FYI: the easiest way to install Julia is to use [the `Juliaup` command line tool](https://github.com/JuliaLang/juliaup). -->
+
 ---
 
-The `gsn` (Gaston) CLI does have some useful functionality already - so feel free to give it a try and give feedback on the commands / workflow!
+The `gt` (Gaston) CLI has some useful functionality - so feel free to give it a try and give feedback on the commands / workflow! There's more to come!
 
 The available commands are summarized here:
 (Full descriptions are explicated below)

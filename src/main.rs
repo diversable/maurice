@@ -203,6 +203,7 @@ fn main() -> anyhow::Result<()> {
     // if $HOME/.julia folder exists, then set to false and skip Julia installation; if .julia folder doesn't exist, set to true and execute the 'if' block to install Julia...
     // if !(dot_julia_dir.exists()) {
     if dot_julia_dir.exists() {
+        println!("Couldn't find Julia on your system; installing now...");
         // Install Julia on Linux / MacOS if the .julia directory doesn't exist
         cmd!("echo", "hello from gt - you can install Julia now...").run()?;
         cmd!("curl", "-fsSL", "https://install.julialang.org")
@@ -211,6 +212,8 @@ fn main() -> anyhow::Result<()> {
 
         // TODO! For Windows..
         // cmd!(sh, "winget install julia -s msstore").run()?;
+
+        println!("Please ensure that Julia is on your $PATH before continuing!",);
     }
 
     // If Julia is already installed...
