@@ -1,3 +1,5 @@
+[![Julia-Rust](https://github.com/diversable/gaston/actions/workflows/julia-rust.yml/badge.svg?branch=main)](https://github.com/diversable/gaston/actions/workflows/julia-rust.yml)
+
 NOTICE:
 
 This software is under development and is currently in the 'Alpha' phase.
