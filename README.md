@@ -24,7 +24,7 @@ The `gt` (Gaston) CLI has some useful functionality - so feel free to give it a 
 The available commands are summarized here:
 (Full descriptions are explicated below)
 
-- gsn
+- gt
   - new | generate
     - script
     - app (*in progress)
@@ -42,25 +42,25 @@ The available commands are summarized here:
     - remove | rm | delete [package_name]
     - update [?package_name]
 
-NOTE: Using partial commands also works with this CLI tool, so using a command like `gsn p up` will work the same as the command `gsn pkg update` and will update all packages; `gsn j ed` will work the same as `gsn jl edit` and will start up VSCode as well as start the Julia process in the terminal for you.
+NOTE: Using partial commands also works with this CLI tool, so using a command like `gt p up` will work the same as the command `gt pkg update` and will update all packages; `gt j ed` will work the same as `gt jl edit` and will start up VSCode as well as start the Julia process in the terminal for you.
 
 ---
 
-Some helpful workflow shortcuts with the `gsn` (Gaston) CLI are:
+Some helpful workflow shortcuts with the `gt` (Gaston) CLI are:
 
-- create an environment with default files & folders in the current working directory: `gsn new` or `gsn new env`
+- create an environment with default files & folders in the current working directory: `gt new` or `gt new env`
 
 - Get the status of packages in your environment:
-`gsn pkg ls` or `gsn p st` (or `gsn pkg status` if you like typing)
+`gt pkg ls` or `gt p st` (or `gt pkg status` if you like typing)
 
 - Install a package in the local environment:
-  `gsn p i <package_name>` or `gsn p add <package_name>`
+  `gt p i <package_name>` or `gt p add <package_name>`
   (ie. gaston package install | add package)
 
-- Start VSCode in the current directory and start the julia repl for interactive work on the side: `gsn jl edit` or `gsn j ed` (NB: currently, VSCode must already be installed for this command to work)
+- Start VSCode in the current directory and start the julia repl for interactive work on the side: `gt jl edit` or `gt j ed` (NB: currently, VSCode must already be installed for this command to work)
 
 - Start a Pluto Notebook:
-  `gsn jl pluto` or `gsn j p`
+  `gt jl pluto` or `gt j p`
 
 
 ---
@@ -68,57 +68,57 @@ Some helpful workflow shortcuts with the `gsn` (Gaston) CLI are:
 Currently, the CLI functions include:
 
 
-> gsn (new | generate)
+> gt (new | generate)
 
 => _create a new environment & project structure; the CLI will ask for a project name_
 
 
-> gsn (new | generate) [?script_name]
+> gt (new | generate) [?script_name]
 
 => _same as above: create a new environment & project structure; the CLI will ask for a project name if one is not provided_
 
 
-> gsn jl
+> gt jl
 
 => _start Julia with the project in the current directory activated (default), or run the Julia Repl with the global env. if not in a Julia project directory_
 
 
-> gsn jl (repl | run)
+> gt jl (repl | run)
 
 => _same as above: start Julia with the project in the current directory activated (default), or run the Julia Repl with the global env. if not in a Julia project directory_
 
 
-> gsn jl (pluto | notebook | nb)
+> gt jl (pluto | notebook | nb)
 
-=> _starts Pluto.jl, the notebook environment written in native Julia. If Pluto is not installed, gsn will install it for you._
+=> _starts Pluto.jl, the notebook environment written in native Julia. If Pluto is not installed, gt will install it for you._
 
 
-> gsn jl (edit | code)
+> gt jl (edit | code)
 
 => _open VSCode with the current directory, and start up a Julia process in the terminal for working / testing interactively as well; currently, VSCode must already be installed and on the the user's $PATH_
 
 
-> gsn pkg
+> gt pkg
 
 => _get status of installed packages. NB: all commands default to current local environment for adding/removing packages, and fall back to global environment if not working in a project directory_
 
 
-> gsn pkg (status | list | ls)
+> gt pkg (status | list | ls)
 
 => _get status of installed packages / list installed packages._
 
 
-> gsn pkg add [package_name]
+> gt pkg add [package_name]
 
 => _add a package from a Julia registry_
 
 
-> gsn pkg (remove | rm | delete) [package_name]
+> gt pkg (remove | rm | delete) [package_name]
 
 => _remove an installed package; defaults to operating on local project environment, and falls back to global environment_
 
 
-> gsn pkg update [?package_name]
+> gt pkg update [?package_name]
 
 => _update all packages if the 'package_name' is not provided, or update specific package in local environment if 'package_name' is given_
 
@@ -130,6 +130,6 @@ Building from source:
 
 Rust language must be installed to compile this tool; Rust can be installed using [the rustup tool](https://rustup.rs/).
 
-For non-Rust users: after cloning this repo from Github, the `gsn` CLI tool can be compiled by typing `cargo build --release` onto the  command line in the project's root directory, and then copying the `gsn` binary from the `(project root)/target/release/` folder into a directory on your $PATH (eg. `/usr/bin` or `~/bin`).
+For non-Rust users: after cloning this repo from Github, the `gt` CLI tool can be compiled by typing `cargo build --release` onto the  command line in the project's root directory, and then copying the `gt` binary from the `(project root)/target/release/` folder into a directory on your $PATH (eg. `/usr/bin` or `~/bin`).
 
-On Linux or Windows WSL, if you enter the `(project root)/target/release` directory, then you can use the command `cp ./gsn ~/bin/` to add the binary to your $PATH (you may need to create the ~/bin/ directory if it doesn't exist). Then you're ready to start using the gsn (Gaston) CLI tool.
+On Linux or Windows WSL, if you enter the `(project root)/target/release` directory, then you can use the command `cp ./gt ~/bin/` to add the binary to your $PATH (you may need to create the ~/bin/ directory if it doesn't exist). Then you're ready to start using the gt (Gaston) CLI tool.

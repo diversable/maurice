@@ -94,7 +94,7 @@ fn cli() -> Command {
                 Command::new("add")
                     .arg(arg!([PACKAGE_NAME]))
                     .visible_alias("install")
-                    .about("add a package to the local environment: eg. `gsn pkg add [package_name]` ")
+                    .about("add a package to the local environment: eg. `gt pkg add [package_name]` ")
                     // .long_flag("global")
                     // .short_flag('g')
             )
@@ -113,11 +113,11 @@ fn cli() -> Command {
                 // Todo! (con'td) Which should be the default? Local env as default, or global env as default?
                 //
                 // Update Package
-                // NB! Because `infer_subcommands` is turned on, above, you can also use `gsn p up` as a short form to activate the `update` command.
+                // NB! Because `infer_subcommands` is turned on, above, you can also use `gt p up` as a short form to activate the `update` command.
             .subcommand(
                 Command::new("update")
                     .arg(arg!([PACKAGE_NAME]))
-                    .about("updates all packages, or updates a single package if a package_name is supplied; defaults to working on local environment. Eg. `gsn pkg update` or `gsn p up CSV`")
+                    .about("updates all packages, or updates a single package if a package_name is supplied; defaults to working on local environment. Eg. `gt pkg update` or `gt p up CSV`")
             )
         ) // END PKG Sub-command
         .subcommand(
@@ -278,7 +278,7 @@ fn main() -> anyhow::Result<()> {
         Some(("new", sub_matches)) => {
             let new_command = sub_matches
                 .subcommand()
-                // If an argument isn't supplied to `gsn new <nothing>`, then default to creating a new environment
+                // If an argument isn't supplied to `gt new <nothing>`, then default to creating a new environment
                 .unwrap_or(("script", sub_matches));
 
             match new_command {
@@ -357,7 +357,7 @@ fn main() -> anyhow::Result<()> {
         }
         Some(("jl", sub_matches)) => {
             let jl_command = sub_matches.subcommand().unwrap_or(("run", sub_matches));
-            // .expect("messed up gsn jl command");
+            // .expect("messed up gt jl command");
 
             match jl_command {
                 ("pluto", _sub_matches) => {
@@ -380,7 +380,7 @@ fn main() -> anyhow::Result<()> {
 
                 // };
 
-                // if run with `gsn jl run`, then start the julia process using the current directory as the active environment
+                // if run with `gt jl run`, then start the julia process using the current directory as the active environment
                 ("run", _sub_matches) => {
                     let julia_executable_string =
                         CString::new("julia").expect("CString::new failed...");
