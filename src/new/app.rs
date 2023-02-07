@@ -53,7 +53,8 @@ pub fn new_app_ask_name(julia: &mut Julia) {
     let input_app_name: String = Input::new()
         .with_prompt("What name would you like to give your app?")
         .interact()
-        .unwrap_or("Main".to_string());
+        // .unwrap_or("Main".to_string());
+        .unwrap();
 
     let app_name = input_app_name;
     new_app_w_name(julia, app_name.as_str());

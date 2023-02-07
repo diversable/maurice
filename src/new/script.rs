@@ -1,3 +1,4 @@
+use anyhow::Context;
 use capitalize::Capitalize;
 use dialoguer::{console::Term, theme::ColorfulTheme, Input};
 use jlrs::prelude::*;
@@ -17,7 +18,8 @@ pub fn new_script_ask_name(julia: &mut Julia) {
     let input_script_name: String = Input::new()
         .with_prompt("What name would you like to give your script?")
         .interact_text()
-        .unwrap_or("Main".to_string());
+        // .unwrap_or("Main".to_string());
+        .unwrap();
 
     let script_name = input_script_name;
     new_script_w_name(julia, script_name.as_str());

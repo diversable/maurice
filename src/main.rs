@@ -4,16 +4,19 @@ use std::ffi::{CString, OsString};
 use std::fs;
 use std::path::PathBuf;
 use std::process;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 
-use clap::{arg, ColorChoice, Command};
+use clap::{arg, ArgMatches, ColorChoice, Command};
 use jlrs::prelude::*;
 // TODO! The `nix` crate is Unix-only! Find a Windows-compatible way to provide the same functionality!
 use nix::unistd::execvp;
 // use xshell::{cmd, Shell};
 use anyhow::{anyhow, Context, Result};
+
 use dialoguer;
 use dialoguer::theme::ColorfulTheme;
-use dialoguer::{console::Term, MultiSelect, Select};
+use dialoguer::{console::Term, Select};
 use duct::cmd;
 
 use dirs::home_dir;
@@ -188,116 +191,7 @@ pub fn run_pluto_nb(julia: &mut Julia) {
     .expect("failed to exec Julia process...");
 }
 
-fn main() -> anyhow::Result<()> {
-    // TODO! If Julia is not installed, install Julia using juliaup:
-    //
-    // Mac & Linux:
-    // curl -fsSL https://install.julialang.org | sh
-    //
-    // Windows:
-    // winget install julia -s msstore
-    //
-    let home_dir = home_dir().expect("Couldn't find the user's home directory");
-    let mut dot_julia_dir = PathBuf::new();
-    dot_julia_dir.push(&home_dir);
-    dot_julia_dir.push(".julia");
-
-    // if $HOME/.julia folder exists, then set to false and skip Julia installation; if .julia folder doesn't exist, set to true and execute the 'if' block to install Julia...
-    if !(dot_julia_dir.exists()) {
-        // for debugging...
-        // if dot_julia_dir.exists() {
-
-        println!("Couldn't find Julia on your system...");
-
-        let install_options = vec!["Yes", "No"];
-        let choice = Select::with_theme(&ColorfulTheme::default())
-            .with_prompt("Would you like to install the Julia language?")
-            .items(&install_options)
-            .default(0)
-            .interact_on_opt(&Term::stderr())?;
-
-        // match on user's choice of yes / no to install Julia or not...
-        match choice {
-            // user selects "Yes"
-            Some(0) => {
-                // Install Julia on Linux / MacOS -- iff the .julia directory doesn't exist
-                cmd!("curl", "-fsSL", "https://install.julialang.org")
-                    .pipe(cmd!("sh"))
-                    .run()?;
-
-                // TODO! For Windows..
-                // cmd!(sh, "winget install julia -s msstore").run()?;
-
-                // TODO! Make this better / test this!!!
-                println!("Please ensure that Julia is on your $PATH before continuing!",);
-            }
-            // user selects "No"
-            Some(1) => {
-                println!("You selected {:?}. Julia is required for this tool to work; please install Julia and add it to your $PATH before continuing...", install_options[1]);
-                return Err(anyhow!("Unable to proceed; no Julia installed"));
-            }
-            _ => unreachable!(),
-        }
-    }
-
-    // If Julia is already installed...
-    //
-    let mut julia_pending = unsafe { RuntimeBuilder::new().start().expect("Could not init Julia") };
-
-    let mut frame = StackFrame::new();
-    let mut julia = julia_pending.instance(&mut frame);
-
-    let julia_dir = PathBuf::from(".julia/gaston/Gaston.jl");
-    let mut gaston_jl_path = PathBuf::new();
-    gaston_jl_path.push(home_dir);
-    gaston_jl_path.push(julia_dir);
-
-    // Include some custom code defined in <file>.
-    // This is safe because the included code doesn't do any strange things.
-
-    // TODO! update this check to ensure that the contents of the Gaston.jl file matches what's in the julia/mod.rs -> JULIA_FILE_CONTENTS &str...
-
-    if gaston_jl_path.exists() {
-        let latest_jl_file_contents = JULIA_FILE_CONTENTS.to_string();
-
-        let gaston_jl_file_contents =
-            fs::read_to_string(&gaston_jl_path).expect("Couldn't read Gaston.jl file...");
-
-        let update_file_maybe = latest_jl_file_contents.eq(&gaston_jl_file_contents);
-
-        unsafe {
-            if update_file_maybe {
-                // println!("Gaston path exists @: {:?}", gaston_jl_path);
-                julia
-                    .include(gaston_jl_path)
-                    .expect("Could not include file");
-            } else {
-                println!("Ensuring you have the latest Gaston.jl file. Writing Gaston.jl file to `$HOME/.julia/gaston/Gaston.jl`", );
-
-                write_julia_script_to_disk()
-                    .expect("couldn't write Gaston.jl file to $HOME/.julia/gaston/Gaston.jl");
-
-                julia
-                    .include(gaston_jl_path)
-                    .expect("Could not include file - please file a bug report!");
-            }
-        }
-    } else {
-        println!("Couldn't find Gaston.jl file. Writing Gaston.jl file to `$HOME/.julia/gaston/Gaston.jl`", );
-
-        write_julia_script_to_disk()
-            .expect("couldn't write Gaston.jl file to $HOME/.julia/gaston/Gaston.jl");
-
-        unsafe {
-            julia
-                .include(gaston_jl_path)
-                .expect("Could not include file - please file a bug report!");
-        }
-    }
-
-    // CLI
-    let matches = cli().get_matches();
-
+fn run_matching(mut julia: Julia, matches: ArgMatches) {
     match matches.subcommand() {
         Some(("new", sub_matches)) => {
             let new_command = sub_matches
@@ -369,6 +263,7 @@ fn main() -> anyhow::Result<()> {
                         }
                     } else {
                         // if neither source nor target path is provided, get it from user input
+
                         let source_path = get_app_source_path();
                         let target_path = get_app_compile_target_path();
                         compile_app(&mut julia, source_path.as_str(), target_path.as_str())
@@ -548,140 +443,139 @@ fn main() -> anyhow::Result<()> {
         }
         // If all subcommands are defined above, anything else is unreachable!
         _ => unreachable!(),
-    }
+    };
+}
+
+fn main() -> Result<()> {
+    let running = Arc::new(AtomicBool::new(true));
+    let r = running.clone();
+
+    ctrlc::set_handler(move || {
+        r.store(false, Ordering::SeqCst);
+        println!("\nrunning.clone (r) = {:?}", &r);
+        println!("Got Ctrl+C signal!");
+        process::exit(1);
+    })
+    .expect("Error setting CTRL + C handler");
+
+    println!("running = {:?}", running);
+
+    while running.load(Ordering::SeqCst) {
+        println!("inside running.load....");
+
+        // If Julia is not installed, install Julia using juliaup:
+        //
+        // Mac & Linux:
+        // curl -fsSL https://install.julialang.org | sh
+        //
+        // Windows:
+        // winget install julia -s msstore
+        //
+        let home_dir = home_dir().expect("Couldn't find the user's home directory");
+        let mut dot_julia_dir = PathBuf::new();
+        dot_julia_dir.push(&home_dir);
+        dot_julia_dir.push(".julia");
+
+        // if $HOME/.julia folder exists, then set to false and skip Julia installation; if .julia folder doesn't exist, set to true and execute the 'if' block to install Julia...
+        if !(dot_julia_dir.exists()) {
+            // for debugging...
+            // if dot_julia_dir.exists() {
+            println!("Couldn't find Julia on your system...");
+
+            let install_options = vec!["Yes", "No"];
+            let choice = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Would you like to install the Julia language?")
+                .items(&install_options)
+                .default(0)
+                .interact_on_opt(&Term::stderr())?;
+
+            // match on user's choice of yes / no to install Julia or not...
+            match choice {
+                // user selects "Yes"
+                Some(0) => {
+                    // Install Julia on Linux / MacOS -- iff the .julia directory doesn't exist
+                    cmd!("curl", "-fsSL", "https://install.julialang.org")
+                        .pipe(cmd!("sh"))
+                        .run()?;
+
+                    // TODO! For Windows..
+                    // cmd!(sh, "winget install julia -s msstore").run()?;
+
+                    // TODO! Make this better / test this!!!
+                    println!("Please ensure that Julia is on your $PATH before continuing!",);
+                }
+                // user selects "No"
+                Some(1) => {
+                    println!("You selected {:?}. Julia is required for this tool to work; please install Julia and add it to your $PATH before continuing...",install_options[1]
+            );
+                    return Err(anyhow!("Unable to proceed; Julia language not installed"));
+                }
+                _ => unreachable!(),
+            }
+        }
+
+        // If Julia is already installed...
+        //
+        let mut julia_pending =
+            unsafe { RuntimeBuilder::new().start().expect("Could not init Julia") };
+
+        let mut frame = StackFrame::new();
+        let mut julia = julia_pending.instance(&mut frame);
+
+        let julia_dir = PathBuf::from(".julia/gaston/Gaston.jl");
+        let mut gaston_jl_path = PathBuf::new();
+        gaston_jl_path.push(home_dir);
+        gaston_jl_path.push(julia_dir);
+
+        // Include some custom code defined in <file>.
+        // This is safe because the included code doesn't do any strange things.
+
+        // TODO! Create config which allows users to hack on the Gaston.jl file without overwriting the file every time the app starts up...
+
+        if gaston_jl_path.exists() {
+            let latest_jl_file_contents = JULIA_FILE_CONTENTS.to_string();
+
+            let gaston_jl_file_contents =
+                fs::read_to_string(&gaston_jl_path).expect("Couldn't read Gaston.jl file...");
+
+            let update_file_maybe = latest_jl_file_contents.eq(&gaston_jl_file_contents);
+
+            unsafe {
+                if update_file_maybe {
+                    // println!("Gaston path exists @: {:?}", gaston_jl_path);
+                    julia
+                        .include(gaston_jl_path)
+                        .expect("Could not include file");
+                } else {
+                    println!("Ensuring you have the latest Gaston.jl file. Writing Gaston.jl file to `$HOME/.julia/gaston/Gaston.jl`", );
+
+                    write_julia_script_to_disk()
+                        .expect("couldn't write Gaston.jl file to $HOME/.julia/gaston/Gaston.jl");
+
+                    julia
+                        .include(gaston_jl_path)
+                        .expect("Could not include file - please file a bug report!");
+                }
+            }
+        } else {
+            println!("Couldn't find Gaston.jl file. Writing Gaston.jl file to `$HOME/.julia/gaston/Gaston.jl`", );
+
+            write_julia_script_to_disk()
+                .expect("couldn't write Gaston.jl file to $HOME/.julia/gaston/Gaston.jl");
+
+            unsafe {
+                julia
+                    .include(gaston_jl_path)
+                    .expect("Could not include file - please file a bug report!");
+            }
+        }
+
+        // CLI
+
+        let matches = cli().get_matches();
+
+        run_matching(julia, matches);
+    } // end running.load
 
     Ok(())
 }
-
-//---------------------------------------------------------------------------------
-//
-//
-// Example Clap sub-commands
-// for reference
-//
-//
-//
-//
-// .subcommand(
-//     Command::new("clone")
-//         .about("clones repos")
-//         .arg(arg!(<REMOTE> "The remote to clone"))
-//         .arg_required_else_help(true),
-// )
-// .subcommand(
-//     Command::new("diff")
-//         .about("Compare two commits")
-//         .arg(arg!(base: [COMMIT]))
-//         .arg(arg!(head: [COMMIT]))
-//         .arg(arg!(path: [PATH]).last(true))
-//         .arg(
-//             arg!(--color <WHEN>)
-//                 .value_parser(["always", "auto", "never"])
-//                 .num_args(0..=1)
-//                 .require_equals(true)
-//                 .default_value("auto")
-//                 .default_missing_value("always"),
-//         ),
-// )
-// .subcommand(
-//     Command::new("push")
-//         .about("pushes repo to a remote")
-//         .arg(arg!(<REMOTE> "The remote to target"))
-//         .arg_required_else_help(true),
-// )
-// .subcommand(
-//     Command::new("add")
-//         .about("add things to the repo")
-//         .arg_required_else_help(true)
-//         .arg(
-//             arg!(<PATH> ... "Files and folders to add")
-//                 .value_parser(clap::value_parser!(PathBuf)),
-//         ),
-// )
-// .subcommand(
-//     Command::new("stash")
-//         .about("stashes changes for later")
-//         .args_conflicts_with_subcommands(true)
-//         .args(push_args())
-//         .subcommand(Command::new("push").args(push_args()))
-//         .subcommand(Command::new("pop").arg(arg!([STASH])))
-//         .subcommand(Command::new("apply").arg(arg!([STASH]))),
-// )
-//
-//
-// fn push_args() -> Vec<clap::Arg> {
-//     vec![arg!(-m --message <MESSAGE>)]
-// }
-//
-//
-// -----------------------------------------
-//
-//
-//
-// Example Sub-command matches
-//
-//
-// match matches.subcommand() {
-// Some(("clone", sub_matches)) => {
-//     println!(
-//         "Cloning {}",
-//         sub_matches.get_one::<String>("REMOTE").expect("required")
-//     );
-// }
-// Some(("diff", sub_matches)) => {
-//     let color = sub_matches
-//         .get_one::<String>("color")
-//         .map(|s| s.as_str())
-//         .expect("defaulted in Clap");
-
-//     let mut base = sub_matches.get_one::<String>("base").map(|s| s.as_str());
-//     let mut head = sub_matches.get_one::<String>("head").map(|s| s.as_str());
-//     let mut path = sub_matches.get_one::<String>("path").map(|s| s.as_str());
-
-//     if path.is_none() {
-//         path = head;
-//         head = None;
-//         if path.is_none() {
-//             path = base;
-//             base = None;
-//         }
-//     }
-//     let base = base.unwrap_or("stage");
-//     let head = head.unwrap_or("worktree");
-//     let path = path.unwrap_or("");
-//     println!("Diffing {} ... {} {} (color={})", base, head, path, color);
-// }
-// Some(("push", sub_matches)) => {
-//     println!(
-//         "Pushing to {}",
-//         sub_matches.get_one::<String>("REMOTE").expect("required")
-//     );
-// }
-// Some(("add", sub_matches)) => {
-//     let paths = sub_matches
-//         .get_many::<PathBuf>("PATH")
-//         .into_iter()
-//         .flatten()
-//         .collect::<Vec<_>>();
-//     println!("Adding {:?}", paths);
-// }
-// Some(("stash", sub_matches)) => {
-//     let stash_command = sub_matches.subcommand().unwrap_or(("push", sub_matches));
-//     match stash_command {
-//         ("apply", sub_matches) => {
-//             let stash = sub_matches.get_one::<String>("STASH");
-//             println!("Applying {:?}", stash);
-//         }
-//         ("pop", sub_matches) => {
-//             let stash = sub_matches.get_one::<String>("STASH");
-//             println!("Popping {:?}", stash);
-//         }
-//         ("push", sub_matches) => {
-//             let message = sub_matches.get_one::<String>("message");
-//             println!("Pushing {:?}", message);
-//         }
-//         (name, _) => {
-//             unreachable!("Unsupported subcommand `{}`", name)
-//         }
-//     }
-// }
