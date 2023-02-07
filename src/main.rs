@@ -24,9 +24,9 @@ use dirs::home_dir;
 mod compile;
 mod jl_command;
 mod julia;
-// mod lib;
 mod new;
 mod pkg;
+mod test_command;
 
 use jl_command::pluto_nb::check_pluto_nb_is_installed;
 use julia::{write_julia_script_to_disk, JULIA_FILE_CONTENTS};
@@ -447,135 +447,147 @@ fn run_matching(mut julia: Julia, matches: ArgMatches) {
 }
 
 fn main() -> Result<()> {
-    let running = Arc::new(AtomicBool::new(true));
-    let r = running.clone();
+    // Signal_hook implementation of CTRL+C handler...
+    // let term = Arc::new(AtomicBool::new(false));
+    // signal_hook::flag::register(signal_hook::consts::SIGTERM, Arc::clone(&term));
 
-    ctrlc::set_handler(move || {
-        r.store(false, Ordering::SeqCst);
-        println!("\nrunning.clone (r) = {:?}", &r);
-        println!("Got Ctrl+C signal!");
-        process::exit(1);
-    })
-    .expect("Error setting CTRL + C handler");
+    // while !term.load(Ordering::Relaxed) {
+    //
+    //
+    // }
+    //
+    //
 
-    println!("running = {:?}", running);
+    // let running = Arc::new(AtomicBool::new(true));
+    // let r = running.clone();
 
-    while running.load(Ordering::SeqCst) {
-        println!("inside running.load....");
+    // ctrlc::set_handler(move || {
+    //     r.store(false, Ordering::SeqCst);
+    //     println!("\nrunning.clone (r) = {:?}", &r);
+    //     println!("Got Ctrl+C signal!");
+    //     process::exit(1);
+    // })
+    // .expect("Error setting CTRL + C handler");
 
-        // If Julia is not installed, install Julia using juliaup:
-        //
-        // Mac & Linux:
-        // curl -fsSL https://install.julialang.org | sh
-        //
-        // Windows:
-        // winget install julia -s msstore
-        //
-        let home_dir = home_dir().expect("Couldn't find the user's home directory");
-        let mut dot_julia_dir = PathBuf::new();
-        dot_julia_dir.push(&home_dir);
-        dot_julia_dir.push(".julia");
+    // println!("running = {:?}", running);
+    // while running.load(Ordering::SeqCst) {
+    //     // println!("inside running.load....");
+    //     // End CtrlC handling
+    // } // end running.load
 
-        // if $HOME/.julia folder exists, then set to false and skip Julia installation; if .julia folder doesn't exist, set to true and execute the 'if' block to install Julia...
-        if !(dot_julia_dir.exists()) {
-            // for debugging...
-            // if dot_julia_dir.exists() {
-            println!("Couldn't find Julia on your system...");
+    //
+    //
+    // If Julia is not installed, install Julia using juliaup:
+    //
+    // Mac & Linux:
+    // curl -fsSL https://install.julialang.org | sh
+    //
+    // Windows:
+    // winget install julia -s msstore
+    //
+    let home_dir = home_dir().expect("Couldn't find the user's home directory");
+    let mut dot_julia_dir = PathBuf::new();
+    dot_julia_dir.push(&home_dir);
+    dot_julia_dir.push(".julia");
 
-            let install_options = vec!["Yes", "No"];
-            let choice = Select::with_theme(&ColorfulTheme::default())
-                .with_prompt("Would you like to install the Julia language?")
-                .items(&install_options)
-                .default(0)
-                .interact_on_opt(&Term::stderr())?;
+    // if $HOME/.julia folder exists, then set to false and skip Julia installation; if .julia folder doesn't exist, set to true and execute the 'if' block to install Julia...
+    if !(dot_julia_dir.exists()) {
+        // for debugging...
+        // if dot_julia_dir.exists() {
+        println!("Couldn't find Julia on your system...");
 
-            // match on user's choice of yes / no to install Julia or not...
-            match choice {
-                // user selects "Yes"
-                Some(0) => {
-                    // Install Julia on Linux / MacOS -- iff the .julia directory doesn't exist
-                    cmd!("curl", "-fsSL", "https://install.julialang.org")
-                        .pipe(cmd!("sh"))
-                        .run()?;
+        let install_options = vec!["Yes", "No"];
+        let choice = Select::with_theme(&ColorfulTheme::default())
+            .with_prompt("Would you like to install the Julia language?")
+            .items(&install_options)
+            .default(0)
+            .interact_on_opt(&Term::stderr())?;
 
-                    // TODO! For Windows..
-                    // cmd!(sh, "winget install julia -s msstore").run()?;
+        // match on user's choice of yes / no to install Julia or not...
+        match choice {
+            // user selects "Yes"
+            Some(0) => {
+                // Install Julia on Linux / MacOS -- iff the .julia directory doesn't exist
+                cmd!("curl", "-fsSL", "https://install.julialang.org")
+                    .pipe(cmd!("sh"))
+                    .run()?;
 
-                    // TODO! Make this better / test this!!!
-                    println!("Please ensure that Julia is on your $PATH before continuing!",);
-                }
-                // user selects "No"
-                Some(1) => {
-                    println!("You selected {:?}. Julia is required for this tool to work; please install Julia and add it to your $PATH before continuing...",install_options[1]
+                // TODO! For Windows..
+                // cmd!(sh, "winget install julia -s msstore").run()?;
+
+                // TODO! Make this better / test this!!!
+                println!("Please ensure that Julia is on your $PATH before continuing!",);
+            }
+            // user selects "No"
+            Some(1) => {
+                println!("You selected {:?}. Julia is required for this tool to work; please install Julia and add it to your $PATH before continuing...",install_options[1]
             );
-                    return Err(anyhow!("Unable to proceed; Julia language not installed"));
-                }
-                _ => unreachable!(),
+                return Err(anyhow!("Unable to proceed; Julia language not installed"));
             }
+            _ => unreachable!(),
         }
+    }
 
-        // If Julia is already installed...
-        //
-        let mut julia_pending =
-            unsafe { RuntimeBuilder::new().start().expect("Could not init Julia") };
+    // If Julia is already installed...
+    //
+    let mut julia_pending = unsafe { RuntimeBuilder::new().start().expect("Could not init Julia") };
 
-        let mut frame = StackFrame::new();
-        let mut julia = julia_pending.instance(&mut frame);
+    let mut frame = StackFrame::new();
+    let mut julia = julia_pending.instance(&mut frame);
 
-        let julia_dir = PathBuf::from(".julia/gaston/Gaston.jl");
-        let mut gaston_jl_path = PathBuf::new();
-        gaston_jl_path.push(home_dir);
-        gaston_jl_path.push(julia_dir);
+    let julia_dir = PathBuf::from(".julia/gaston/Gaston.jl");
+    let mut gaston_jl_path = PathBuf::new();
+    gaston_jl_path.push(home_dir);
+    gaston_jl_path.push(julia_dir);
 
-        // Include some custom code defined in <file>.
-        // This is safe because the included code doesn't do any strange things.
+    // Include some custom code defined in <file>.
+    // This is safe because the included code doesn't do any strange things.
 
-        // TODO! Create config which allows users to hack on the Gaston.jl file without overwriting the file every time the app starts up...
+    // TODO! Create config which allows users to hack on the Gaston.jl file without overwriting the file every time the app starts up...
 
-        if gaston_jl_path.exists() {
-            let latest_jl_file_contents = JULIA_FILE_CONTENTS.to_string();
+    if gaston_jl_path.exists() {
+        let latest_jl_file_contents = JULIA_FILE_CONTENTS.to_string();
 
-            let gaston_jl_file_contents =
-                fs::read_to_string(&gaston_jl_path).expect("Couldn't read Gaston.jl file...");
+        let gaston_jl_file_contents =
+            fs::read_to_string(&gaston_jl_path).expect("Couldn't read Gaston.jl file...");
 
-            let update_file_maybe = latest_jl_file_contents.eq(&gaston_jl_file_contents);
+        let update_file_maybe = latest_jl_file_contents.eq(&gaston_jl_file_contents);
 
-            unsafe {
-                if update_file_maybe {
-                    // println!("Gaston path exists @: {:?}", gaston_jl_path);
-                    julia
-                        .include(gaston_jl_path)
-                        .expect("Could not include file");
-                } else {
-                    println!("Ensuring you have the latest Gaston.jl file. Writing Gaston.jl file to `$HOME/.julia/gaston/Gaston.jl`", );
+        unsafe {
+            if update_file_maybe {
+                // println!("Gaston path exists @: {:?}", gaston_jl_path);
+                julia
+                    .include(gaston_jl_path)
+                    .expect("Could not include file");
+            } else {
+                println!("Ensuring you have the latest Gaston.jl file. Writing Gaston.jl file to `$HOME/.julia/gaston/Gaston.jl`", );
 
-                    write_julia_script_to_disk()
-                        .expect("couldn't write Gaston.jl file to $HOME/.julia/gaston/Gaston.jl");
+                write_julia_script_to_disk()
+                    .expect("couldn't write Gaston.jl file to $HOME/.julia/gaston/Gaston.jl");
 
-                    julia
-                        .include(gaston_jl_path)
-                        .expect("Could not include file - please file a bug report!");
-                }
-            }
-        } else {
-            println!("Couldn't find Gaston.jl file. Writing Gaston.jl file to `$HOME/.julia/gaston/Gaston.jl`", );
-
-            write_julia_script_to_disk()
-                .expect("couldn't write Gaston.jl file to $HOME/.julia/gaston/Gaston.jl");
-
-            unsafe {
                 julia
                     .include(gaston_jl_path)
                     .expect("Could not include file - please file a bug report!");
             }
         }
+    } else {
+        println!("Couldn't find Gaston.jl file. Writing Gaston.jl file to `$HOME/.julia/gaston/Gaston.jl`", );
 
-        // CLI
+        write_julia_script_to_disk()
+            .expect("couldn't write Gaston.jl file to $HOME/.julia/gaston/Gaston.jl");
 
-        let matches = cli().get_matches();
+        unsafe {
+            julia
+                .include(gaston_jl_path)
+                .expect("Could not include file - please file a bug report!");
+        }
+    }
 
-        run_matching(julia, matches);
-    } // end running.load
+    // CLI
+
+    let matches = cli().get_matches();
+
+    run_matching(julia, matches);
 
     Ok(())
 }

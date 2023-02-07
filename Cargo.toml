@@ -22,6 +22,7 @@ dirs = "4.0.0"
 duct = "0.13.6"
 
 jlrs = { version = "0.17.0", features = ["sync-rt"] }
+signal-hook = "0.3.14"
 # xshell = "0.2.3"
 
 # normpath = "1.1.0"
