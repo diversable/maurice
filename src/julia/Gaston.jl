@@ -229,8 +229,11 @@ function make_pkg_in_target_dir(pkg_name::String)
         end
 
         println("Getting your package ready...")
-        PkgTemplates.generate(pkg_name)
+        template = PkgTemplates.Template(; user=diversable, dir="./$pkg_name", julia=v"1.6.0")
+        template(pkg_name)
+
         Pkg.activate(pkg_name)
+
         try
             generate_docs(pkg_name)
         catch
