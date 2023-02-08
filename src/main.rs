@@ -56,7 +56,6 @@ fn cli() -> Command {
             Command::new("jl")
                 .about("start the Julia REPL using the project in the current directory; sub-commands start Pluto notebooks and VSCode")
                 .args_conflicts_with_subcommands(true)
-                // TODO! should I implement a `repl` subcommand as well, which does the same thing as the 'run' command? I'm leaning towards yes...
                 .subcommand(
                     Command::new("repl")
                     .about("runs the Julia REPL in the existing process in the terminal; defaults to the project in the current environment")
@@ -306,17 +305,7 @@ fn run_matching(mut julia: Julia, matches: ArgMatches) {
                     //
 
                     run_pluto_nb(&mut julia);
-
-                    // check_pluto_nb_is_installed(&mut julia);
-
-                    // let _output = process::Command::new("julia")
-                    //     .arg("-E")
-                    //     .arg("using Pluto; Pluto.run()")
-                    //     .spawn()
-                    //     .expect("Could not run Julia -> Pluto notebook");
                 }
-
-                // };
 
                 // if run with `gt jl run`, then start the julia process using the current directory as the active environment
                 ("repl", _sub_matches) => {
@@ -361,7 +350,6 @@ fn run_matching(mut julia: Julia, matches: ArgMatches) {
                     let julia_args_project =
                         CString::new("--project=@.").expect("CString::new failed...");
 
-                    // process::Command::new("code")
                     execvp(julia_executable, &[julia_args_julia, julia_args_project])
                         .expect("failed to exec Julia process...");
                 }
@@ -380,6 +368,7 @@ fn run_matching(mut julia: Julia, matches: ArgMatches) {
                 }
             }
 
+            // TODO! Command / run template:
             // let julia_executable_string = CString::new("julia").expect("CString::new failed...");
             // let julia_executable = julia_executable_string.as_c_str();
 

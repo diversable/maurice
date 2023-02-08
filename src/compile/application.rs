@@ -1,4 +1,7 @@
+use dialoguer::{console::Term, theme::ColorfulTheme, Input};
 use jlrs::prelude::*;
+use std::env::current_dir;
+use std::path::PathBuf;
 
 pub fn compile_app(julia: &mut Julia, source_code_path: &str, target_directory_path: &str) {
     println!(
@@ -37,11 +40,7 @@ pub fn compile_app(julia: &mut Julia, source_code_path: &str, target_directory_p
                     // If you don't want to use the exception, it can be converted to a `JlrsError`
                     // In this case the error message will contain the message that calling `display` in Julia would show
                     .into_jlrs_result()?
-                    // The function that was called returns a `Cint`, which can be unboxed as `i32`
-                    // .unbox()::<i32>()
-                    //
-                    // unbox a function return type from Julia which is `Nothing`
-                    // .unbox::<Nothing>()
+                    // The function that was called returns a String
                     .unbox::<String>()
             }
         })
