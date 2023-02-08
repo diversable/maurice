@@ -4,6 +4,8 @@ use std::ffi::{CString, OsString};
 use std::fs;
 use std::path::PathBuf;
 use std::process;
+//
+// Ctrl+C Handling:
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
@@ -28,10 +30,9 @@ mod new;
 mod pkg;
 mod test_command;
 
+use compile::application::compile_app;
 use jl_command::pluto_nb::check_pluto_nb_is_installed;
 use julia::{write_julia_script_to_disk, JULIA_FILE_CONTENTS};
-// use lib::run_pluto_nb;
-use compile::application::compile_app;
 use new::app::{
     get_app_compile_target_path, get_app_source_path, new_app_ask_name, new_app_w_name,
 };
@@ -58,9 +59,9 @@ fn cli() -> Command {
                 .args_conflicts_with_subcommands(true)
                 // TODO! should I implement a `repl` subcommand as well, which does the same thing as the 'run' command? I'm leaning towards yes...
                 .subcommand(
-                    Command::new("run")
+                    Command::new("repl")
                     .about("runs the Julia REPL in the existing process in the terminal; defaults to the project in the current environment")
-                    .visible_alias("repl")
+                    // .visible_alias("")
                 )
                 // TODO! add argument to Pluto to start on a different port, etc....
                 .subcommand(
@@ -275,7 +276,7 @@ fn run_matching(mut julia: Julia, matches: ArgMatches) {
             }
         }
         Some(("jl", sub_matches)) => {
-            let jl_command = sub_matches.subcommand().unwrap_or(("run", sub_matches));
+            let jl_command = sub_matches.subcommand().unwrap_or(("repl", sub_matches));
             // .expect("messed up gt jl command");
 
             match jl_command {
@@ -300,7 +301,7 @@ fn run_matching(mut julia: Julia, matches: ArgMatches) {
                 // };
 
                 // if run with `gt jl run`, then start the julia process using the current directory as the active environment
-                ("run", _sub_matches) => {
+                ("repl", _sub_matches) => {
                     let julia_executable_string =
                         CString::new("julia").expect("CString::new failed...");
                     let julia_executable = julia_executable_string.as_c_str();
@@ -452,12 +453,12 @@ fn main() -> Result<()> {
     // signal_hook::flag::register(signal_hook::consts::SIGTERM, Arc::clone(&term));
 
     // while !term.load(Ordering::Relaxed) {
+
     //
     //
     // }
     //
     //
-
     // let running = Arc::new(AtomicBool::new(true));
     // let r = running.clone();
 
