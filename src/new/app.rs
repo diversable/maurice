@@ -7,10 +7,8 @@
 use capitalize::Capitalize;
 use dialoguer::{console::Term, theme::ColorfulTheme, Input};
 use jlrs::prelude::*;
-use std::env::{self, current_dir};
 use std::fs::{DirBuilder, File};
 use std::io::prelude::*;
-use std::path::{self, PathBuf};
 
 const JL_RUNTESTS_CONTENTS: &str = r###"module Test
 using Test
