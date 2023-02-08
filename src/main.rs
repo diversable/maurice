@@ -11,6 +11,7 @@ use std::sync::Arc;
 
 use clap::{arg, ArgMatches, ColorChoice, Command};
 use jlrs::prelude::*;
+use new::package::{new_pkg_ask_name, new_pkg_w_name};
 // TODO! The `nix` crate is Unix-only! Find a Windows-compatible way to provide the same functionality!
 use nix::unistd::execvp;
 // use xshell::{cmd, Shell};
@@ -30,12 +31,10 @@ mod new;
 mod pkg;
 mod test_command;
 
-use compile::application::compile_app;
+use compile::application::{compile_app, get_app_compile_target_path, get_app_source_path};
 use jl_command::pluto_nb::check_pluto_nb_is_installed;
 use julia::{write_julia_script_to_disk, JULIA_FILE_CONTENTS};
-use new::app::{
-    get_app_compile_target_path, get_app_source_path, new_app_ask_name, new_app_w_name,
-};
+use new::app::{new_app_ask_name, new_app_w_name};
 use new::script::{new_script_ask_name, new_script_w_name};
 use pkg::add_package::*;
 use pkg::remove_package::*;
@@ -140,9 +139,15 @@ fn cli() -> Command {
                 )
                 .subcommand(
                     Command::new("app")
+                    .visible_alias("application")
                     .arg(arg!([APP_NAME]))
                     .about("Create a new app using the name the user provides")
-                    .visible_alias("application")
+                )
+                .subcommand(
+                    Command::new("package")
+                        .visible_alias("pkg")
+                        .about("Create a new package using the name and configuration the user provides")
+                        .arg(arg!([PACKAGE_NAME]))
                 )
         )
         .subcommand(Command::new("compile")
@@ -224,6 +229,19 @@ fn run_matching(mut julia: Julia, matches: ArgMatches) {
                         );
                     } else {
                         new_app_ask_name(&mut julia);
+                    }
+                }
+                ("package", sub_matches) => {
+                    if let Some(_) = sub_matches.get_one::<String>("PACKAGE_NAME") {
+                        let package_name = sub_matches.get_one::<String>("PACKAGE_NAME");
+
+                        new_pkg_w_name(
+                            &mut julia,
+                            package_name
+                                .expect("Coulnd't extract package name from user-provided input"),
+                        );
+                    } else {
+                        new_pkg_ask_name(&mut julia);
                     }
                 }
 

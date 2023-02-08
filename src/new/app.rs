@@ -207,32 +207,3 @@ end # module Main"###;
 
     println!("\n{:?}", activate.unwrap());
 }
-
-pub fn get_app_source_path() -> String {
-    let app_source_path = Input::<String>::new()
-        .with_prompt("Please enter the (relative or absolute) path to the Julia source code you want to compile into an app")
-        .interact()
-        .expect("Must provide a path to the source Julia code you want to compile into an app!");
-    app_source_path
-}
-
-pub fn get_app_compile_target_path() -> String {
-    let current_dir = current_dir().expect("couldn't parse current directory");
-    let compiled_path_segment = PathBuf::from("./compiled");
-
-    let mut compiled_path = PathBuf::new();
-    compiled_path.push(current_dir);
-    compiled_path.push(compiled_path_segment);
-
-    let default_path = compiled_path
-        .to_str()
-        .expect("could not construct string from PathBuf")
-        .to_string();
-
-    let compiled_app_path = Input::<String>::new()
-        .with_prompt("Please enter a path for where your compiled app should be output")
-        .interact()
-        .unwrap_or(default_path);
-
-    compiled_app_path
-}
