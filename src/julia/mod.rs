@@ -266,22 +266,36 @@ function make_pkg_in_target_dir(pkg_name::String)
     try
         # Ensure PackageTemplates is in the global environment stack
         if ("PkgTemplates" in keys(Pkg.project().dependencies))
-            println("PkgTemplates is ready to generate your package...")
+            # println("PkgTemplates is ready to generate your package...")
         else
             Pkg.add("PkgTemplates")
         end
 
         println("Getting your package ready...")
-        template = PkgTemplates.Template(; user=diversable, dir="./$pkg_name", julia=v"1.6.0")
+        # template = PkgTemplates.Template(; user="diversable", dir="./$pkg_name", julia=v"1.6")
+        template = Template(;
+            user="diversable",
+            dir="./$pkg_name",
+            authors="Daniel Mantei <dan.mantei@outlook.com>",
+            julia=v"1.6",
+            plugins=[
+                License(; name="MIT"),
+                Git(; manifest=true, ssh=true),
+                GitHubActions(; x86=true),
+                Codecov(),
+                PkgTemplates.Documenter{GitHubActions}(),
+                Develop(),
+            ]
+        )
         template(pkg_name)
 
-        Pkg.activate(pkg_name)
+        # Pkg.activate(pkg_name)
 
-        try
-            generate_docs(pkg_name)
-        catch
-            println("couldn't generate documentation folder for your app...")
-        end
+        # try
+        #     generate_docs(pkg_name)
+        # catch
+        #     println("couldn't generate documentation folder for your package...")
+        # end
 
         return "success"
 
