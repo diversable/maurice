@@ -236,16 +236,6 @@ function generate_docs(project_env_name)
 
 end
 
-function make_env_in_current_dir()
-    # Activate project in current dir..
-    Pkg.activate(".")
-
-    # Must add a package in order to generate Project.toml file
-    # So... add a package that *everyone* should use in their packages:
-
-    Pkg.add("Documenter")
-
-end
 
 function make_app_in_target_dir(app_name::String)
     try
@@ -271,6 +261,42 @@ function make_app_in_target_dir(app_name::String)
         return "Could not generate app"
     end
 end
+
+function make_pkg_in_target_dir(pkg_name::String)
+    try
+        # Ensure PackageTemplates is in the global environment stack
+        if ("PkgTemplates" in keys(Pkg.project().dependencies))
+            println("PkgTemplates is ready to generate your package...")
+        else
+            Pkg.add("PkgTemplates")
+        end
+
+        println("Getting your package ready...")
+        PkgTemplates.generate(pkg_name)
+        Pkg.activate(pkg_name)
+        try
+            generate_docs(pkg_name)
+        catch
+            println("couldn't generate documentation folder for your app...")
+        end
+
+        return "success"
+
+    catch
+        return "Could not generate package"
+    end
+end
+
+# function make_env_in_current_dir()
+#     # Activate project in current dir..
+#     Pkg.activate(".")
+
+#     # Must add a package in order to generate Project.toml file
+#     # So... add a package that *everyone* should use in their packages:
+
+#     Pkg.add("Documenter")
+
+# end
 
 # function make_project_in_defined_directory(directory::String)
 #     install_pkgtemplates()
@@ -322,5 +348,7 @@ end
 end # module Create
 
 end # module Gaston
+
+
 
 "###;
