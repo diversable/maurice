@@ -26,7 +26,7 @@ The available commands are summarized here:
   - new | generate
     - script [?script_name]
     - app [?app_name]
-    - package [?package_name]
+    - package [?package_name] *in progress
   - compile | create
     - app (*in progress)
     <!-- - sysimage -->
