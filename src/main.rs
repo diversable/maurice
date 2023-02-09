@@ -11,7 +11,6 @@ use std::sync::Arc;
 
 use clap::{arg, ArgMatches, ColorChoice, Command};
 use jlrs::prelude::*;
-use new::package::{new_pkg_ask_name, new_pkg_w_name};
 // TODO! The `nix` crate is Unix-only! Find a Windows-compatible way to provide the same functionality!
 use nix::unistd::execvp;
 // use xshell::{cmd, Shell};
@@ -35,6 +34,7 @@ use compile::application::{compile_app, get_app_compile_target_path, get_app_sou
 use jl_command::pluto_nb::check_pluto_nb_is_installed;
 use julia::{write_julia_script_to_disk, JULIA_FILE_CONTENTS};
 use new::app::{new_app_ask_name, new_app_w_name};
+use new::package::{self, new_package_ask_name, new_package_w_name};
 use new::script::{new_script_ask_name, new_script_w_name};
 use pkg::add_package::*;
 use pkg::remove_package::*;
@@ -232,15 +232,35 @@ fn run_matching(mut julia: Julia, matches: ArgMatches) {
                 }
                 ("package", sub_matches) => {
                     if let Some(_) = sub_matches.get_one::<String>("PACKAGE_NAME") {
+                        // for both Option 1 & 2
                         let package_name = sub_matches.get_one::<String>("PACKAGE_NAME");
 
-                        new_pkg_w_name(
-                            &mut julia,
-                            package_name
-                                .expect("Coulnd't extract package name from user-provided input"),
-                        );
+                        // Option 1:
+                        // new_pkg_w_name(
+                        //     &mut julia,
+                        //     package_name
+                        //         .expect("Coulnd't extract package name from user-provided input"),
+                        // );
+
+                        // Option 2: exec Julia process for package creation
+                        // let template_cmd = format!(
+                        //     "using PkgTemplates; t = Template(; user=\"diversable\"); t({:?})",
+                        //     package_name.expect("couldn't get package name from string")
+                        // );
+
+                        // println!("{}", template_cmd);
+
+                        // let package_cmd = cmd!("julia", "-E", template_cmd).run();
+                        // println!("package_cmd: {:?}", package_cmd);
+
+                        // Option 3:
+                        if let Some(package_name) = package_name {
+                            // new_package_w_name(&mut julia, sub_matches)
+                            new_package_w_name(&mut julia, package_name.to_owned())
+                                .expect("couldn't create new package...");
+                        }
                     } else {
-                        new_pkg_ask_name(&mut julia);
+                        new_package_ask_name(&mut julia).expect("couldn't create a package, even though I asked for the package name...");
                     }
                 }
 

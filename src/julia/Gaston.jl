@@ -154,7 +154,7 @@ end # module PkgAPI
 # New script / environment, app project, or package (using PkgTemplates)
 module New
 using Pkg
-include("/home/danamantei/.julia/config/startup.jl")
+# include("/home/danamantei/.julia/config/startup.jl")
 # include("/home/danamantei/.julia/gaston/template.jl")
 
 Pkg.activate()

@@ -12,34 +12,35 @@ use jlrs::prelude::*;
 // Documenter
 // DocumenterTools
 //
-
+use anyhow::{anyhow, Context, Result};
 use capitalize::Capitalize;
 use dialoguer::{console::Term, theme::ColorfulTheme, Input};
 use jlrs::prelude::*;
+use nix::unistd::execvp;
 use std::env::{self, current_dir};
+use std::ffi::{CString, OsString};
 use std::fs::{DirBuilder, File};
 use std::io::prelude::*;
 use std::path::{self, PathBuf};
 
-const JL_RUNTESTS_CONTENTS: &str = r###"module Test
-using Test
+// const JL_RUNTESTS_CONTENTS: &str = r###"module Test
+// using Test
 
-include("../src/Main.jl")
+// include("../src/Main.jl")
 
+// # write tests here...
+// @testset "Main functions work" begin
+//     username = "Alice"
 
-# write tests here...
-@testset "Main functions work" begin
-    username = "Alice"
+//     @testset "Main.main(?username) methods work" begin
+//         @test Main.main() == println("Hello, app user!")
+//         @test Main.main(username) == println("Hello, Alice !!!")
+//     end
 
-    @testset "Main.main(?username) methods work" begin
-        @test Main.main() == println("Hello, app user!")
-        @test Main.main(username) == println("Hello, Alice !!!")
-    end
+// end
 
-end
-
-end # module Test
-"###;
+// end # module Test
+// "###;
 
 // const JL_APP_MAIN_MOD_CONTENTS: &str = r###"module Main
 
@@ -58,7 +59,7 @@ end # module Test
 // end # module Main
 // "###;
 
-pub fn new_pkg_ask_name(julia: &mut Julia) {
+pub fn new_package_ask_name(julia: &mut Julia) -> Result<()> {
     let input_pkg_name: String = Input::new()
         .with_prompt("What name would you like to give your package?")
         .interact()
@@ -66,154 +67,82 @@ pub fn new_pkg_ask_name(julia: &mut Julia) {
         .unwrap();
 
     let pkg_name = input_pkg_name;
-    new_pkg_w_name(julia, pkg_name.as_str());
+    new_package_w_name(julia, pkg_name)?;
+    Ok(())
+}
+// pub fn new_package_w_name(julia: &mut Julia, sub_matches: &ArgMatches) -> Result<()> {
+pub fn new_package_w_name(julia: &mut Julia, package_name: String) -> Result<()> {
+    // let package_name = sub_matches.get_one::<String>("PACKAGE_NAME");
+
+    // TODO: Check to make sure that PkgTemplates is installed....
+    // check_pluto_nb_is_installed(julia);
+
+    let julia_executable_string = CString::new("julia").expect("CString::new failed...");
+    let julia_executable = julia_executable_string.as_c_str();
+
+    let julia_args_julia = CString::new("julia").expect("CString::new failed...");
+    let julia_args_project = CString::new("--project=@.").expect("CString::new failed...");
+    let julia_args_exec = CString::new("-E").expect("couldn't write -E flag for julia process");
+
+    // Option 1: julia_args_pkgtemplates
+    // let template_cmd = format!(
+    //     "using PkgTemplates; t = Template(; user=\"diversable\"); t({:?})",
+    //     package_name.expect("couldn't get package name from string")
+    // );
+    // let julia_args_pkgtemplates = CString::new(template_cmd)?;
+
+    // Option 2: julia_args_pkgtemplates
+
+    let arg = format!("make_package({:?})", package_name);
+    let julia_args_pkgtemplates = CString::new(arg)?;
+
+    execvp(
+        julia_executable,
+        &[
+            julia_args_julia,
+            julia_args_project,
+            julia_args_exec,
+            julia_args_pkgtemplates,
+        ],
+    )
+    .expect("failed to exec Julia process...");
+
+    Ok(())
 }
 
-// TODO! create default files unless ./src/Main.jl & /tests/run_tests.jl files exist
-pub fn new_pkg_w_name(julia: &mut Julia, pkg_name: &str) {
-    println!("\nActivating environment \"{}\"\n", &pkg_name);
+// // TODO! create default files unless ./src/Main.jl & /tests/run_tests.jl files exist
+// pub fn new_pkg_w_name(julia: &mut Julia, pkg_name: &str) {
+//     println!("\nActivating environment \"{}\"\n", &pkg_name);
 
-    // Ensure app names are capitalized, as per standard Julia practice
-    let pkg_name = pkg_name.to_string().capitalize();
-    let activate = julia
-        .scope(|mut frame| {
-            let jl_module_main = Module::main(&mut frame);
+//     // Ensure app names are capitalized, as per standard Julia practice
+//     let pkg_name = pkg_name.to_string().capitalize();
+//     let activate = julia
+//         .scope(|mut frame| {
+//             let jl_module_main = Module::main(&mut frame);
 
-            let pkg_name = JuliaString::new(&mut frame, &pkg_name);
+//             let pkg_name = JuliaString::new(&mut frame, &pkg_name);
 
-            unsafe {
-                jl_module_main
-                    // the submodule doesn't have to be rooted because it's never reloaded.
-                    .submodule(&mut frame, "Gaston")?
-                    .submodule(&mut frame, "New")?
-                    // the same holds true for the function: the module is never reloaded so it's globally rooted
-                    .function(&mut frame, "make_pkg_in_target_dir")?
-                    //
-                    // CALLING A FUNCTION
-                    //
-                    // TODO! Set up PkgTemplates Pkg Generation....!!!!
-                    // Call the function with the target Julia frame and ...
-                    .call1(&mut frame, pkg_name.as_value())
-                    //
-                    // If you don't want to use the exception, it can be converted to a `JlrsError`
-                    // In this case the error message will contain the message that calling `display` in Julia would show
-                    .into_jlrs_result()?
-                    .unbox::<String>()
-            }
-        })
-        .expect("Result is an error");
+//             unsafe {
+//                 jl_module_main
+//                     // the submodule doesn't have to be rooted because it's never reloaded.
+//                     .submodule(&mut frame, "Gaston")?
+//                     .submodule(&mut frame, "New")?
+//                     // the same holds true for the function: the module is never reloaded so it's globally rooted
+//                     .function(&mut frame, "make_pkg_in_target_dir")?
+//                     //
+//                     // CALLING A FUNCTION
+//                     //
+//                     // TODO! Set up PkgTemplates Pkg Generation....!!!!
+//                     // Call the function with the target Julia frame and ...
+//                     .call1(&mut frame, pkg_name.as_value())
+//                     //
+//                     // If you don't want to use the exception, it can be converted to a `JlrsError`
+//                     // In this case the error message will contain the message that calling `display` in Julia would show
+//                     .into_jlrs_result()?
+//                     .unbox::<String>()
+//             }
+//         })
+//         .expect("Result is an error");
 
-    println!("\n{:?}", activate.unwrap());
-}
-
-//     // Get handle to current directory
-//     let current_dir = env::current_dir().expect("couldn't get current directory");
-
-//     // Create Tests directory & run_tests.jl file
-//     let mut tests_dir_path = path::PathBuf::new();
-//     tests_dir_path.push(&current_dir);
-//     tests_dir_path.push("./test");
-
-//     DirBuilder::new()
-//         .recursive(true)
-//         .create(&tests_dir_path)
-//         .expect("Could not create `test` directory");
-
-//     let mut tests_file_path = path::PathBuf::new();
-//     tests_file_path.push(tests_dir_path);
-//     tests_file_path.push("./runtests.jl");
-//     let mut jl_runtests_file =
-//         File::create(&tests_file_path).expect("could not create runtests.jl file");
-
-//     write!(jl_runtests_file, "{}", JL_RUNTESTS_CONTENTS)
-//         .expect("Could not write test file contents");
-
-//     // Next, create the proper structure for creating an app
-//     // create julia_main()::CInt fn for PkgCompiler App creation
-//     let mut main_file_path = path::PathBuf::new();
-//     main_file_path.push(&current_dir);
-
-//     // the generate_docs fn has moved us into the package dir, so just use ./src to get a handle to the main source file
-//     main_file_path.push("src");
-
-//     let main_file_name = pkg_name.clone() + ".jl";
-
-//     main_file_path.push(&main_file_name);
-
-//     let mut jl_main_mod_file =
-//         File::create(main_file_path).expect("could not create / overwrite main app's module file");
-
-//     // Prepare content to write to the primary (named) module file...
-//     let jl_app_main_mod_part1: &str = r#"module "#;
-
-//     let jl_app_main_mod_part2: &str = r###"
-// include("Main.jl")
-
-// # Write the necessary functionality for your app using the `Main.jl` file / `main()` function; this file is primarily set up for compiling your app with the PackageCompiler.jl infrastructure.
-// # If you need to handle arguments from the command line for your app, a brief demonstration is given below..
-
-// function handle_command_line(ARGS)
-//     # do something based on ARGS? ARGS will come from the command line when you run your app..
-
-//     try
-//         if isempty(ARGS)
-//             # use the Main module, and call the main() function
-//             Main.main()
-//         else
-//             # use the Main module, and call the main() function with 1 arg from cmd line
-//             Main.main(ARGS[1])
-//         end
-//     catch
-//         Base.invokelatest(Base.display_error, Base.catch_stack())
-//         # return 1 means `return with 1 error' - this is useful for piping the output of one app into another on the command line
-//         return 1
-//     end
-//     # return 0 means 'returned with 0 errors'
-//     return 0
-// end
-
-// function julia_main()::Cint
-//     handle_command_line(ARGS)
-// end
-
-// # If this app is run as a script with Julia, handle the execution.
-// if abspath(PROGRAM_FILE) == @__FILE__
-//     handle_command_line(ARGS)
-// end
-
-// end # module "###;
-
-//     write!(
-//         jl_main_mod_file,
-//         "{}{}{}{}",
-//         jl_app_main_mod_part1, &pkg_name, jl_app_main_mod_part2, &pkg_name
-//     )
-//     .expect("could not write app file");
-
-//     // Create a "Main.jl" file where user writes their code
-
-//     let mut user_main_file_path = path::PathBuf::new();
-//     user_main_file_path.push(&current_dir);
-//     user_main_file_path.push("src");
-//     user_main_file_path.push("Main.jl");
-
-//     println!("{:?}", &user_main_file_path);
-
-//     let mut user_main_file =
-//         File::create(user_main_file_path).expect("Could not create user main file for app..");
-
-//     let user_main_file_contents = r###"module Main
-
-// function main()
-// 	# write your code here
-// 	println("Hello, app user!")
-// end
-
-// function main(username::String)
-//     println("Hello, $username !!!")
-// end
-
-// end # module Main"###;
-
-//     write!(user_main_file, "{}", user_main_file_contents)
-//         .expect("could not write user main file contents for app....");
+//     println!("\n{:?}", activate.unwrap());
+// }
