@@ -154,6 +154,8 @@ end # module PkgAPI
 # New script / environment, app project, or package (using PkgTemplates)
 module New
 using Pkg
+include("/home/danamantei/.julia/config/startup.jl")
+# include("/home/danamantei/.julia/gaston/template.jl")
 
 Pkg.activate()
 
@@ -229,22 +231,26 @@ function make_pkg_in_target_dir(pkg_name::String)
         end
 
         println("Getting your package ready...")
+
+        # this should work, but doesn't....
+        make_package(pkg_name)
+
         # template = PkgTemplates.Template(; user="diversable", dir="./$pkg_name", julia=v"1.6")
-        template = Template(;
-            user="diversable",
-            dir="./$pkg_name",
-            authors="Daniel Mantei <dan.mantei@outlook.com>",
-            julia=v"1.6",
-            plugins=[
-                License(; name="MIT"),
-                Git(; manifest=true, ssh=true),
-                GitHubActions(; x86=true),
-                Codecov(),
-                PkgTemplates.Documenter{GitHubActions}(),
-                Develop(),
-            ]
-        )
-        template(pkg_name)
+
+        # template = Template(;
+        #     user="diversable",
+        #     dir="./$pkg_name",
+        #     authors="Daniel Mantei <dan.mantei@outlook.com>",
+        #     julia=v"1.6",
+        #     plugins=[
+        #         License(; name="MIT"),
+        #         Git(; manifest=true, ssh=true),
+        #         GitHubActions(; x86=true),
+        #         Codecov(),
+        #         PkgTemplates.Documenter{GitHubActions}(),
+        #         Develop(),
+        #     ]
+        # )
 
         # Pkg.activate(pkg_name)
 
