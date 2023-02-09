@@ -71,7 +71,7 @@ pub fn new_package_ask_name(julia: &mut Julia) -> Result<()> {
     Ok(())
 }
 // pub fn new_package_w_name(julia: &mut Julia, sub_matches: &ArgMatches) -> Result<()> {
-pub fn new_package_w_name(julia: &mut Julia, package_name: String) -> Result<()> {
+pub fn new_package_w_name(_julia: &mut Julia, package_name: String) -> Result<()> {
     // let package_name = sub_matches.get_one::<String>("PACKAGE_NAME");
 
     // TODO: Check to make sure that PkgTemplates is installed....

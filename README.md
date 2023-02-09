@@ -24,9 +24,9 @@ The available commands are summarized here:
 
 - gt
   - new | generate
-    - script
-    - app (*in progress)
-    <!-- - package (*yet to be implemented) -->
+    - script [?script_name]
+    - app [?app_name]
+    - package [?package_name]
   - compile | create
     - app (*in progress)
     <!-- - sysimage -->
@@ -37,7 +37,7 @@ The available commands are summarized here:
   - pkg
     - status | list | ls
     - add [package_name]
-    - remove | rm | delete [package_name]
+    - remove | rm | delete [?package_name]
     - update [?package_name]
 
 NOTE: Using partial commands also works with this CLI tool, so using a command like `gt p up` will work the same as the command `gt pkg update` and will update all packages; `gt j ed` will work the same as `gt jl edit` and will start up VSCode as well as start the Julia process in the terminal for you.
