@@ -26,7 +26,7 @@ The available commands are summarized here:
   - new | generate
     - script [?script_name]
     - app [?app_name]
-    - package [?package_name] *in progress
+    - package [?package_name]
   - compile | create
     - app (*in progress)
     <!-- - sysimage -->
@@ -74,6 +74,14 @@ Currently, the CLI functions include:
 > gt (new | generate) [?script_name]
 
 => _same as above: create a new environment & project structure; the CLI will ask for a project name if one is not provided_
+
+> gt (new | generate) [?app_name]
+
+=> _create a new app project structure; the CLI will ask for an app name if one is not provided_
+
+> gt (new | generate) [?package_name]
+
+=> _ create a new package, using PkgTemplates.jl (and the startup file written to ./julia/config); the CLI will ask for a package name if one is not provided_
 
 
 > gt jl

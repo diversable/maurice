@@ -93,6 +93,8 @@ pub fn new_package_w_name(_julia: &mut Julia, package_name: String) -> Result<()
 
     // Option 2: julia_args_pkgtemplates
 
+    // make sure that package_name is capitalized, as per Julia norms
+    let package_name = package_name.capitalize();
     let arg = format!("make_package({:?})", package_name);
     let julia_args_pkgtemplates = CString::new(arg)?;
 

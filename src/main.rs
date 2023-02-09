@@ -1,7 +1,8 @@
 #![allow(dead_code)]
 
 use std::ffi::{CString, OsString};
-use std::fs;
+use std::fs::{self, DirBuilder};
+use std::io::prelude::*;
 use std::path::PathBuf;
 use std::process;
 //
@@ -514,6 +515,7 @@ fn main() -> Result<()> {
     // winget install julia -s msstore
     //
     let home_dir = home_dir().expect("Couldn't find the user's home directory");
+
     let mut dot_julia_dir = PathBuf::new();
     dot_julia_dir.push(&home_dir);
     dot_julia_dir.push(".julia");
@@ -556,7 +558,59 @@ fn main() -> Result<()> {
         }
     }
 
-    // If Julia is already installed...
+    // Create `startup.jl` file, if not already present:
+    let mut startup_jl_dir = PathBuf::new();
+    startup_jl_dir.push(dot_julia_dir);
+    startup_jl_dir.push("config");
+
+    // if `./julia/config` dir does not exist, then create it and create startup.jl
+    if !(startup_jl_dir.exists()) {
+        // create the ./julia/config dir
+        DirBuilder::new().recursive(true).create(&startup_jl_dir)?;
+
+        let mut startup_jl_file_path = PathBuf::new();
+        startup_jl_file_path.push(&startup_jl_dir);
+        startup_jl_file_path.push("startup.jl");
+        let mut startup_jl_file = fs::File::create(startup_jl_file_path)?;
+
+        let github_username = dialoguer::Input::<String>::new()
+            .with_prompt("What is your github.com username? \nIf you don't have a Github username, go create one now, then enter it here:")
+            .interact()?;
+
+        // get the user's github name for default package creation....
+
+        const STARTUP_JL_FILE_CONTENTS_1: &str = r###"
+function template()
+    @eval begin
+        using PkgTemplates
+        Template(;
+            user=""###;
+        const STARTUP_JL_FILE_CONTENTS_2: &str = r###"",
+            # uncomment and change the `dir` variable value if you want your packages created in a different directory
+            # dir="~/.julia/dev", # Default Directory
+            dir=".", # Gaston's default directory
+            julia=v"1.8",
+            plugins=[
+                License(; name="MIT"),
+                Git(; manifest=true, ssh=true),
+                GitHubActions(; x86=true),
+                Codecov(),
+                Documenter{GitHubActions}(),
+                Develop(),
+            ])
+    end
+end
+
+make_package = template()
+        "###;
+        write!(
+            startup_jl_file,
+            "{}{}{}",
+            STARTUP_JL_FILE_CONTENTS_1, github_username, STARTUP_JL_FILE_CONTENTS_2
+        )?;
+        println!("Wrote you a startup.jl file at ~/.julia/config/startup.jl");
+    }
+    // Once Julia is already installed...
     //
     let mut julia_pending = unsafe { RuntimeBuilder::new().start().expect("Could not init Julia") };
 
