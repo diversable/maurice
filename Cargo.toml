@@ -1,6 +1,6 @@
 [package]
-name = "gt"
-description = "Gaston (gt): the Julia project manager"
+name = "mce"
+description = "Maurice (mce): the Julia project manager"
 version = "0.2.0"
 edition = "2021"
 
