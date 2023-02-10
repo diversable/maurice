@@ -155,7 +155,14 @@ fn cli() -> Command {
                     .arg(arg!([JULIA_PROJECT_PATH]))
                     .arg(arg!([COMPILED_APP_PATH_TARGET]))
             )
-    )
+        )
+        .subcommand(Command::new("run")
+            .visible_alias("exec")
+            // .visible_alias("command")
+            // .visible_alias("cmd")
+            .about("execute julia code from the command line...")
+            .arg(arg!([JL_CODE]))
+        )
 }
 
 // pub fn run_pluto_nb(julia: &mut Julia) {
@@ -179,7 +186,7 @@ pub fn run_pluto_nb(julia: &mut Julia) {
     let julia_args_exec = CString::new("-E").expect("couldn't write -E flag for julia process");
 
     let julia_args_pluto =
-        CString::new("using Pluto; Pluto.run()").expect("couldn't create c-string for using Pluto");
+        CString::new("using Pluto; Pluto.run()").expect("couldn't create C-string for using Pluto");
 
     execvp(
         julia_executable,
@@ -195,6 +202,53 @@ pub fn run_pluto_nb(julia: &mut Julia) {
 
 fn run_matching(mut julia: Julia, matches: ArgMatches) {
     match matches.subcommand() {
+        Some(("run", sub_matches)) => {
+            let jl_code = sub_matches
+                .get_one::<String>("JL_CODE")
+                .expect("couldn't extract run code argument");
+
+            let jl_code = jl_code.as_str();
+
+            // if the name passed in contains ".jl", then run it as a script, otherwise, execute the input string (`jl_code`) as raw Julia code..
+            if jl_code.contains(".jl") {
+                let julia_executable_string =
+                    CString::new("julia").expect("CString::new failed...");
+                let julia_executable = julia_executable_string.as_c_str();
+
+                let julia_args_julia = CString::new("julia").expect("CString::new failed...");
+
+                let julia_args_to_script =
+                    CString::new(jl_code).expect("couldn't create C-string for running command");
+
+                execvp(julia_executable, &[julia_args_julia, julia_args_to_script])
+                    .expect("failed to exec Julia process...");
+            } else {
+                // execute code as raw julia code just like `julia -e "..."`
+                let julia_executable_string =
+                    CString::new("julia").expect("CString::new failed...");
+                let julia_executable = julia_executable_string.as_c_str();
+
+                let julia_args_julia = CString::new("julia").expect("CString::new failed...");
+                let julia_args_project =
+                    CString::new("--project=@.").expect("CString::new failed...");
+                let julia_args_exec =
+                    CString::new("-E").expect("couldn't write -E flag for julia process");
+
+                let julia_args_to_run =
+                    CString::new(jl_code).expect("couldn't create C-string for running command");
+
+                execvp(
+                    julia_executable,
+                    &[
+                        julia_args_julia,
+                        julia_args_project,
+                        julia_args_exec,
+                        julia_args_to_run,
+                    ],
+                )
+                .expect("failed to exec Julia process...");
+            }
+        }
         Some(("new", sub_matches)) => {
             let new_command = sub_matches
                 .subcommand()
