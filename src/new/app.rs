@@ -1,9 +1,3 @@
-// install PackageCompiler in Env
-// install:
-// Documenter
-// DocumenterTools
-//
-
 use capitalize::Capitalize;
 use dialoguer::{console::Term, theme::ColorfulTheme, Input};
 use jlrs::prelude::*;
@@ -31,23 +25,6 @@ end
 
 end # module Test
 "###;
-
-// const JL_APP_MAIN_MOD_CONTENTS: &str = r###"module Main
-
-// function julia_main()::Cint
-//     try
-//         main()
-//     catch
-//         Base.invokelatest(Base.display_error, Base.catch_stack())
-//         return 1
-//     end
-//     return 0
-// end
-
-// main()
-
-// end # module Main
-// "###;
 
 pub fn new_app_ask_name(julia: &mut Julia) {
     let input_app_name: String = Input::new()

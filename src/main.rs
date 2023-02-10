@@ -5,16 +5,12 @@ use std::fs::{self, DirBuilder};
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::process;
-//
-// Ctrl+C Handling:
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
 
 use clap::{arg, ArgMatches, ColorChoice, Command};
 use jlrs::prelude::*;
 // TODO! The `nix` crate is Unix-only! Find a Windows-compatible way to provide the same functionality!
 use nix::unistd::execvp;
-// use xshell::{cmd, Shell};
+
 use anyhow::{anyhow, Context, Result};
 
 use dialoguer;
@@ -35,7 +31,7 @@ use compile::application::{compile_app, get_app_compile_target_path, get_app_sou
 use jl_command::pluto_nb::check_pluto_nb_is_installed;
 use julia::{write_julia_script_to_disk, JULIA_FILE_CONTENTS};
 use new::app::{new_app_ask_name, new_app_w_name};
-use new::package::{self, new_package_ask_name, new_package_w_name};
+use new::package::{new_package_ask_name, new_package_w_name};
 use new::script::{new_script_ask_name, new_script_w_name};
 use pkg::add_package::*;
 use pkg::remove_package::*;
