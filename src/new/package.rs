@@ -127,7 +127,7 @@ pub fn new_package_w_name(_julia: &mut Julia, package_name: String) -> Result<()
 //             unsafe {
 //                 jl_module_main
 //                     // the submodule doesn't have to be rooted because it's never reloaded.
-//                     .submodule(&mut frame, "Gaston")?
+//                     .submodule(&mut frame, "Maurice")?
 //                     .submodule(&mut frame, "New")?
 //                     // the same holds true for the function: the module is never reloaded so it's globally rooted
 //                     .function(&mut frame, "make_pkg_in_target_dir")?

@@ -13,7 +13,7 @@ pub fn check_pluto_nb_is_installed(julia: &mut Julia) {
             unsafe {
                 jl_module_main
                     // the submodule doesn't have to be rooted because it's never reloaded.
-                    .submodule(&mut frame, "Gaston")?
+                    .submodule(&mut frame, "Maurice")?
                     .submodule(&mut frame, "Jl_Command")?
                     // the same holds true for the function: the module is never reloaded so it's globally rooted
                     .function(&mut frame, "check_pluto_is_installed_jl")?

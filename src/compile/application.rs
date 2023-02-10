@@ -22,7 +22,7 @@ pub fn compile_app(julia: &mut Julia, source_code_path: &str, target_directory_p
             unsafe {
                 jl_module_main
                     // the submodule doesn't have to be rooted because it's never reloaded.
-                    .submodule(&mut frame, "Gaston")?
+                    .submodule(&mut frame, "Maurice")?
                     .submodule(&mut frame, "Create")?
                     // the same holds true for the function: the module is never reloaded so it's globally rooted
                     .function(&mut frame, "compile_app")?

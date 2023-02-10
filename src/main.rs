@@ -56,8 +56,7 @@ fn cli() -> Command {
                 .subcommand(
                     Command::new("repl")
                     .about("runs the Julia REPL in the existing process in the terminal; defaults to the project in the current environment")
-                    // .visible_alias("")
-                )
+                    )
                 // TODO! add argument to Pluto to start on a different port, etc....
                 .subcommand(
                     Command::new("pluto")
@@ -95,7 +94,7 @@ fn cli() -> Command {
                 Command::new("add")
                     .arg(arg!([PACKAGE_NAME]))
                     .visible_alias("install")
-                    .about("add a package to the local environment: eg. `gt pkg add [package_name]` ")
+                    .about("add a package to the local environment: eg. `mce pkg add [package_name]` ")
                     // .long_flag("global")
                     // .short_flag('g')
             )
@@ -118,7 +117,7 @@ fn cli() -> Command {
             .subcommand(
                 Command::new("update")
                     .arg(arg!([PACKAGE_NAME]))
-                    .about("updates all packages, or updates a single package if a package_name is supplied; defaults to working on local environment. Eg. `gt pkg update` or `gt p up CSV`")
+                    .about("updates all packages, or updates a single package if a package_name is supplied; defaults to working on local environment. Eg. `mce pkg update` or `mce p up CSV`")
             )
         ) // END PKG Sub-command
         .subcommand(
@@ -200,7 +199,7 @@ pub fn run_pluto_nb(julia: &mut Julia) {
     .expect("failed to exec Julia process...");
 }
 
-fn run_matching(mut julia: Julia, matches: ArgMatches) {
+fn handle_cli(mut julia: Julia, matches: ArgMatches) {
     match matches.subcommand() {
         Some(("run", sub_matches)) => {
             let jl_code = sub_matches
@@ -386,7 +385,7 @@ fn run_matching(mut julia: Julia, matches: ArgMatches) {
 
                     let julia_args_julia = CString::new("julia").expect("CString::new failed...");
                     let julia_args_project =
-                        CString::new("--project=@.").expect("CString::new failed...");
+                        CString::new("--project='@.'").expect("CString::new failed...");
 
                     execvp(julia_executable, &[julia_args_julia, julia_args_project])
                         .expect("failed to exec Julia process...");
@@ -667,50 +666,50 @@ make_package = template()
     let mut frame = StackFrame::new();
     let mut julia = julia_pending.instance(&mut frame);
 
-    let julia_dir = PathBuf::from(".julia/gaston/Gaston.jl");
-    let mut gaston_jl_path = PathBuf::new();
-    gaston_jl_path.push(home_dir);
-    gaston_jl_path.push(julia_dir);
+    let julia_dir = PathBuf::from(".julia/maurice/Maurice.jl");
+    let mut maurice_jl_path = PathBuf::new();
+    maurice_jl_path.push(home_dir);
+    maurice_jl_path.push(julia_dir);
 
     // Include some custom code defined in <file>.
     // This is safe because the included code doesn't do any strange things.
 
-    // TODO! Create config which allows users to hack on the Gaston.jl file without overwriting the file every time the app starts up...
+    // TODO! Create config which allows users to hack on the Maurice.jl file without overwriting the file every time the app starts up...
 
-    if gaston_jl_path.exists() {
+    if maurice_jl_path.exists() {
         let latest_jl_file_contents = JULIA_FILE_CONTENTS.to_string();
 
-        let gaston_jl_file_contents =
-            fs::read_to_string(&gaston_jl_path).expect("Couldn't read Gaston.jl file...");
+        let maurice_jl_file_contents =
+            fs::read_to_string(&maurice_jl_path).expect("Couldn't read Maurice.jl file...");
 
-        let update_file_maybe = latest_jl_file_contents.eq(&gaston_jl_file_contents);
+        let update_file_maybe = latest_jl_file_contents.eq(&maurice_jl_file_contents);
 
         unsafe {
             if update_file_maybe {
-                // println!("Gaston path exists @: {:?}", gaston_jl_path);
+                // println!("Maurice path exists @: {:?}", maurice_jl_path);
                 julia
-                    .include(gaston_jl_path)
+                    .include(maurice_jl_path)
                     .expect("Could not include file");
             } else {
-                println!("Ensuring you have the latest Gaston.jl file. Writing Gaston.jl file to `$HOME/.julia/gaston/Gaston.jl`", );
+                println!("Ensuring you have the latest Maurice.jl file. Writing Maurice.jl file to `$HOME/.julia/maurice/Maurice.jl`", );
 
                 write_julia_script_to_disk()
-                    .expect("couldn't write Gaston.jl file to $HOME/.julia/gaston/Gaston.jl");
+                    .expect("couldn't write maurice.jl file to $HOME/.julia/maurice/Maurice.jl");
 
                 julia
-                    .include(gaston_jl_path)
+                    .include(maurice_jl_path)
                     .expect("Could not include file - please file a bug report!");
             }
         }
     } else {
-        println!("Couldn't find Gaston.jl file. Writing Gaston.jl file to `$HOME/.julia/gaston/Gaston.jl`", );
+        println!("Couldn't find Maurice.jl file. Writing Maurice.jl file to `$HOME/.julia/maurice/Maurice.jl`", );
 
         write_julia_script_to_disk()
-            .expect("couldn't write Gaston.jl file to $HOME/.julia/gaston/Gaston.jl");
+            .expect("couldn't write Maurice.jl file to $HOME/.julia/maurice/Maurice.jl");
 
         unsafe {
             julia
-                .include(gaston_jl_path)
+                .include(maurice_jl_path)
                 .expect("Could not include file - please file a bug report!");
         }
     }
@@ -719,7 +718,7 @@ make_package = template()
 
     let matches = cli().get_matches();
 
-    run_matching(julia, matches);
+    handle_cli(julia, matches);
 
     Ok(())
 }
