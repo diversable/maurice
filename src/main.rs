@@ -39,14 +39,14 @@ use pkg::status::*;
 use pkg::update::*;
 
 fn cli() -> Command {
-    Command::new("gt")
-        .about("\nGaston (gt): The Julia project manager")
+    Command::new("mce")
+        .about("\nMaurice (mce): The Julia project manager")
         .subcommand_required(true)
         .arg_required_else_help(true)
         .allow_external_subcommands(true)
         .color(ColorChoice::Always)
-        .visible_alias("gaston")
-        .display_name("gaston")
+        .visible_alias("maurice")
+        .display_name("maurice")
         // TODO! The workflow tip about `infer_subcommands` should be noted in the CLI's help text!
         .infer_subcommands(true)
         .subcommand(
@@ -638,7 +638,7 @@ function template()
         const STARTUP_JL_FILE_CONTENTS_2: &str = r###"",
             # uncomment and change the `dir` variable value if you want your packages created in a different directory
             # dir="~/.julia/dev", # Default Directory
-            dir=".", # Gaston's default directory
+            dir=".", # Maurice's default directory
             julia=v"1.8",
             plugins=[
                 License(; name="MIT"),
