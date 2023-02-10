@@ -216,11 +216,17 @@ fn handle_cli(mut julia: Julia, matches: ArgMatches) {
 
                 let julia_args_julia = CString::new("julia").expect("CString::new failed...");
 
+                let julia_args_project =
+                    CString::new("--project=@.").expect("CString::new failed...");
+
                 let julia_args_to_script =
                     CString::new(jl_code).expect("couldn't create C-string for running command");
 
-                execvp(julia_executable, &[julia_args_julia, julia_args_to_script])
-                    .expect("failed to exec Julia process...");
+                execvp(
+                    julia_executable,
+                    &[julia_args_julia, julia_args_project, julia_args_to_script],
+                )
+                .expect("failed to exec Julia process...");
             } else {
                 // execute code as raw julia code just like `julia -e "..."`
                 let julia_executable_string =
@@ -384,11 +390,26 @@ fn handle_cli(mut julia: Julia, matches: ArgMatches) {
                     let julia_executable = julia_executable_string.as_c_str();
 
                     let julia_args_julia = CString::new("julia").expect("CString::new failed...");
-                    let julia_args_project =
-                        CString::new("--project='@.'").expect("CString::new failed...");
 
-                    execvp(julia_executable, &[julia_args_julia, julia_args_project])
-                        .expect("failed to exec Julia process...");
+                    let local_jl_project_toml = PathBuf::from("./Project.toml");
+                    let parent_jl_project_toml = PathBuf::from("../Project.toml");
+                    if local_jl_project_toml.exists() {
+                        println!("Activating local project..");
+                        let julia_args_project =
+                            CString::new("--project=@.").expect("CString::new failed...");
+                        execvp(julia_executable, &[julia_args_julia, julia_args_project])
+                            .expect("failed to exec Julia process...");
+                    } else if parent_jl_project_toml.exists() {
+                        println!("Activating parent project..");
+                        let julia_args_project =
+                            CString::new("--project=..").expect("CString::new failed...");
+                        execvp(julia_executable, &[julia_args_julia, julia_args_project])
+                            .expect("failed to exec Julia process...");
+                    } else {
+                        println!("No local project found..");
+                        execvp(julia_executable, &[julia_args_julia])
+                            .expect("failed to exec Julia process...");
+                    }
                 }
                 ("edit", _sub_matches) => {
                     // TODO! Introduce checks to ensure that VSCode is installed; if not, ask the user if they want to install it...

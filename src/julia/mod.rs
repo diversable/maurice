@@ -60,14 +60,6 @@ function check_pluto_is_installed_jl()
         Pkg.add("Pluto")
     end
 
-    # try
-    #     # update Pluto Notebook environment
-    #     Pkg.update("Pluto")
-    # catch
-    #     # Add Pluto Notebook environment
-    #     Pkg.add("Pluto")
-    # end
-
     return "Pluto Notebooks is ready"
 end
 
@@ -87,7 +79,7 @@ function activate_local_scope_environment()
 end
 
 function local_env_else_global_env()
-    if isfile("./Project.toml")
+    if (isfile("./Project.toml") || isfile("../Project.toml"))
         activate_local_scope_environment()
     else
         activate_global_scope_environment()
@@ -197,8 +189,6 @@ end # module PkgAPI
 # New script / environment, app project, or package (using PkgTemplates)
 module New
 using Pkg
-# include("/home/danamantei/.julia/config/startup.jl")
-# include("/home/danamantei/.julia/maurice/template.jl")
 
 Pkg.activate()
 
@@ -217,22 +207,22 @@ using Documenter
 using DocumenterTools
 using PkgTemplates
 
-function activate_script_in_target_dir(project_env_name::String)
+function activate_script_in_target_dir(script_name::String)
     try
-        Pkg.generate(project_env_name)
-        Pkg.activate(project_env_name)
+        Pkg.generate(script_name)
+        Pkg.activate(script_name)
         # TODO! This function is fallible; fix this implementation!
-        generate_docs(project_env_name)
+        generate_docs(script_name)
 
-        return "New script created: $project_env_name"
+        return "New script created: $script_name"
     catch
         return "Unable to create script in the target directory"
     end
 end
 
-function generate_docs(project_env_name)
-    cd(project_env_name)
-    Pkg.activate(project_env_name)
+function generate_docs(project_name)
+    cd(project_name)
+    Pkg.activate(project_name)
 
     DocumenterTools.generate()
 
@@ -268,40 +258,15 @@ function make_pkg_in_target_dir(pkg_name::String)
     try
         # Ensure PackageTemplates is in the global environment stack
         if ("PkgTemplates" in keys(Pkg.project().dependencies))
-            # println("PkgTemplates is ready to generate your package...")
+            # println("Maurice is ready to generate your package...")
         else
             Pkg.add("PkgTemplates")
         end
 
         println("Getting your package ready...")
 
-        # this should work, but doesn't....
+
         make_package(pkg_name)
-
-        # template = PkgTemplates.Template(; user="diversable", dir="./$pkg_name", julia=v"1.6")
-
-        # template = Template(;
-        #     user="diversable",
-        #     dir="./$pkg_name",
-        #     authors="Daniel Mantei <dan.mantei@outlook.com>",
-        #     julia=v"1.6",
-        #     plugins=[
-        #         License(; name="MIT"),
-        #         Git(; manifest=true, ssh=true),
-        #         GitHubActions(; x86=true),
-        #         Codecov(),
-        #         PkgTemplates.Documenter{GitHubActions}(),
-        #         Develop(),
-        #     ]
-        # )
-
-        # Pkg.activate(pkg_name)
-
-        # try
-        #     generate_docs(pkg_name)
-        # catch
-        #     println("couldn't generate documentation folder for your package...")
-        # end
 
         return "success"
 
@@ -310,38 +275,7 @@ function make_pkg_in_target_dir(pkg_name::String)
     end
 end
 
-# function make_env_in_current_dir()
-#     # Activate project in current dir..
-#     Pkg.activate(".")
 
-#     # Must add a package in order to generate Project.toml file
-#     # So... add a package that *everyone* should use in their packages:
-
-#     Pkg.add("Documenter")
-
-# end
-
-# function make_project_in_defined_directory(directory::String)
-#     install_pkgtemplates()
-#     Pkg.activate(".")
-
-#     # Must add a package in order to generate Project.toml file
-#     # So... add a package that *everyone* should use in their packages:
-
-
-#     Pkg.add("Documenter")
-# end
-
-# function install_pkgtemplates()
-#     Pkg.activate()
-#     try
-#         Pkg.update("PkgTemplates")
-#         return "PkgTemplates is up to date"
-#     catch
-#         Pkg.add("PkgTemplates")
-#         return "Added PkgTemplates"
-#     end
-# end
 
 end # module New
 
@@ -357,8 +291,6 @@ end
 using PackageCompiler
 
 function compile_app(source_code_path::String, target_directory_path::String)
-    # println(typeof(source_code_path) * ": source dir path from Rust")
-    # println(typeof(target_directory_path) * ": target dir path from Rust")
     try
         create_app(source_code_path, target_directory_path)
         return "Your app has been compiled! You can find the executable in the $target_directory_path/bin folder"
