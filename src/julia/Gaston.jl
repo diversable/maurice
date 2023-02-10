@@ -1,4 +1,4 @@
-module Gaston
+module Maurice
 
 module Jl_Command
 using Pkg
@@ -155,7 +155,7 @@ end # module PkgAPI
 module New
 using Pkg
 # include("/home/danamantei/.julia/config/startup.jl")
-# include("/home/danamantei/.julia/gaston/template.jl")
+# include("/home/danamantei/.julia/maurice/template.jl")
 
 Pkg.activate()
 
@@ -327,5 +327,5 @@ end
 
 end # module Create
 
-end # module Gaston
+end # module Maurice
 

@@ -1,5 +1,5 @@
 //
-// The Gaston.jl file contents should be written to the <home_dir>.julia/gaston/Gaston.jl file/folder
+// The Maurice.jl file contents should be written to the <home_dir>.julia/maurice/Maurice.jl file/folder
 //
 //
 #![allow(dead_code)]
@@ -11,37 +11,37 @@ use std::fs::{self, File};
 use std::io::Write;
 use std::path::PathBuf;
 
-// If the Julia script isn't in the proper place in the filesystem, write/output the julia code to a file named `Gaston.jl`
+// If the Julia script isn't in the proper place in the filesystem, write/output the julia code to a file named `Maurice.jl`
 pub fn write_julia_script_to_disk() -> std::io::Result<()> {
     // unimplemented!();
     let home_dir = home_dir().expect("Couldn't find the user's home directory");
-    let gaston_dir = PathBuf::from(".julia/gaston/");
+    let maurice_dir = PathBuf::from(".julia/maurice/");
 
-    let mut gaston_folder = PathBuf::new();
-    gaston_folder.push(&home_dir);
-    gaston_folder.push(&gaston_dir);
+    let mut maurice_folder = PathBuf::new();
+    maurice_folder.push(&home_dir);
+    maurice_folder.push(&maurice_dir);
 
-    let julia_file_path = PathBuf::from(".julia/gaston/Gaston.jl");
-    let mut gaston_file_path = PathBuf::new();
-    gaston_file_path.push(&home_dir);
-    gaston_file_path.push(&julia_file_path);
+    let julia_file_path = PathBuf::from(".julia/maurice/Maurice.jl");
+    let mut maurice_file_path = PathBuf::new();
+    maurice_file_path.push(&home_dir);
+    maurice_file_path.push(&julia_file_path);
 
-    if gaston_folder.exists() {
-        // println!("Found .julia/gaston/ folder")
+    if maurice_folder.exists() {
+        // println!("Found .julia/maurice/ folder")
     } else {
-        let _dotjulia_gaston_dir =
-            fs::create_dir(gaston_folder).expect("Couldn't create $HOME/.julia/gaston/  directory");
+        let _dotjulia_maurice_dir = fs::create_dir(maurice_folder)
+            .expect("Couldn't create $HOME/.julia/maurice/  directory");
     }
 
-    // create Gaston.jl file in `$HOME/.julia/gaston/`
-    let mut gaston_jl_file = File::create(gaston_file_path)?;
+    // create Maurice.jl file in `$HOME/.julia/maurice/`
+    let mut maurice_jl_file = File::create(maurice_file_path)?;
 
-    // let gaston_jl = (JULIA_FILE_CONTENTS);
-    write!(gaston_jl_file, "{}", JULIA_FILE_CONTENTS)
+    // let maurice_jl = (JULIA_FILE_CONTENTS);
+    write!(maurice_jl_file, "{}", JULIA_FILE_CONTENTS)
 }
 
 pub const JULIA_FILE_CONTENTS: &str = r###"
-module Gaston
+module Maurice
 
 module Jl_Command
 using Pkg
@@ -198,7 +198,7 @@ end # module PkgAPI
 module New
 using Pkg
 # include("/home/danamantei/.julia/config/startup.jl")
-# include("/home/danamantei/.julia/gaston/template.jl")
+# include("/home/danamantei/.julia/maurice/template.jl")
 
 Pkg.activate()
 
@@ -370,7 +370,7 @@ end
 
 end # module Create
 
-end # module Gaston
+end # module Maurice
 
 
 "###;
