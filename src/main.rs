@@ -198,60 +198,80 @@ pub fn run_pluto_nb(julia: &mut Julia) {
     )
     .expect("failed to exec Julia process...");
 }
+fn handle_run_script(jl_code: &str) -> Result<()> {
+    // if the name passed in contains ".jl", then run it as a script, otherwise, execute the input string (`jl_code`) as raw Julia code..
+    let julia_executable_string = CString::new("julia").expect("CString::new failed...");
+    let julia_executable = julia_executable_string.as_c_str();
+
+    let julia_args_julia = CString::new("julia").expect("CString::new failed...");
+
+    let julia_args_project = CString::new("--project=@.").expect("CString::new failed...");
+
+    let julia_args_to_script =
+        CString::new(jl_code).expect("couldn't create C-string for running command");
+
+    execvp(
+        julia_executable,
+        &[julia_args_julia, julia_args_project, julia_args_to_script],
+    )
+    .expect("failed to exec Julia process...");
+    Ok(())
+}
+
+fn handle_raw_jl_string(jl_code: &str) -> Result<()> {
+    // execute code as raw julia code just like `julia -e "..."`
+    let julia_executable_string = CString::new("julia").expect("CString::new failed...");
+    let julia_executable = julia_executable_string.as_c_str();
+
+    let julia_args_julia = CString::new("julia").expect("CString::new failed...");
+    let julia_args_project = CString::new("--project=@.").expect("CString::new failed...");
+    let julia_args_exec = CString::new("-E").expect("couldn't write -E flag for julia process");
+
+    let julia_args_to_run =
+        CString::new(jl_code).expect("couldn't create C-string for running command");
+
+    execvp(
+        julia_executable,
+        &[
+            julia_args_julia,
+            julia_args_project,
+            julia_args_exec,
+            julia_args_to_run,
+        ],
+    )
+    .expect("failed to exec Julia process...");
+    Ok(())
+}
 
 fn handle_cli(mut julia: Julia, matches: ArgMatches) {
     match matches.subcommand() {
         Some(("run", sub_matches)) => {
+            let empty = "ask_for_input".to_string();
             let jl_code = sub_matches
                 .get_one::<String>("JL_CODE")
-                .expect("couldn't extract run code argument");
+                // .expect("couldn't extract run code argument");
+                .unwrap_or(&empty);
 
             let jl_code = jl_code.as_str();
 
-            // if the name passed in contains ".jl", then run it as a script, otherwise, execute the input string (`jl_code`) as raw Julia code..
-            if jl_code.contains(".jl") {
-                let julia_executable_string =
-                    CString::new("julia").expect("CString::new failed...");
-                let julia_executable = julia_executable_string.as_c_str();
+            if jl_code.contains("ask_for_input") {
+                let run_input = dialoguer::Input::<String>::new().with_prompt("\nWhat would you like to run?\n Please enter the path to a file/script, or enter a command in quotes such as \"using Pluto; Pluto.run()\"\n")
+                    .interact().expect("couldn't understand your `mce run <input>` input..");
 
-                let julia_args_julia = CString::new("julia").expect("CString::new failed...");
-
-                let julia_args_project =
-                    CString::new("--project=@.").expect("CString::new failed...");
-
-                let julia_args_to_script =
-                    CString::new(jl_code).expect("couldn't create C-string for running command");
-
-                execvp(
-                    julia_executable,
-                    &[julia_args_julia, julia_args_project, julia_args_to_script],
-                )
-                .expect("failed to exec Julia process...");
+                if run_input.is_empty() {
+                    process::exit(0);
+                } else if run_input.contains(".jl") {
+                    handle_run_script(&run_input).expect("Could not run script for you :(");
+                } else {
+                    println!("run_input: {}", &run_input);
+                    handle_raw_jl_string(&run_input)
+                        .expect("Couldn't execute that Julia string for you... :(")
+                }
+            } else if jl_code.contains(".jl") {
+                handle_run_script(jl_code).expect("Could not run script for you :(");
             } else {
-                // execute code as raw julia code just like `julia -e "..."`
-                let julia_executable_string =
-                    CString::new("julia").expect("CString::new failed...");
-                let julia_executable = julia_executable_string.as_c_str();
-
-                let julia_args_julia = CString::new("julia").expect("CString::new failed...");
-                let julia_args_project =
-                    CString::new("--project=@.").expect("CString::new failed...");
-                let julia_args_exec =
-                    CString::new("-E").expect("couldn't write -E flag for julia process");
-
-                let julia_args_to_run =
-                    CString::new(jl_code).expect("couldn't create C-string for running command");
-
-                execvp(
-                    julia_executable,
-                    &[
-                        julia_args_julia,
-                        julia_args_project,
-                        julia_args_exec,
-                        julia_args_to_run,
-                    ],
-                )
-                .expect("failed to exec Julia process...");
+                handle_raw_jl_string(jl_code)
+                    .expect("Could not execute that Julia code for you... :(");
             }
         }
         Some(("new", sub_matches)) => {
@@ -676,7 +696,7 @@ make_package = template()
         write!(
             startup_jl_file,
             "{}{}{}",
-            STARTUP_JL_FILE_CONTENTS_1, github_username, STARTUP_JL_FILE_CONTENTS_2
+            STARTUP_JL_FILE_CONTENTS_1, &github_username, STARTUP_JL_FILE_CONTENTS_2
         )?;
         println!("Wrote you a startup.jl file at ~/.julia/config/startup.jl");
     }
@@ -737,6 +757,8 @@ make_package = template()
 
     // CLI
 
+    // let username = &github_username;
+    // println!("username = {}", username);
     let matches = cli().get_matches();
 
     handle_cli(julia, matches);

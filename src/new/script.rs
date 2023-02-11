@@ -1,11 +1,11 @@
-use anyhow::Context;
+use anyhow::{Context, Result};
 use capitalize::Capitalize;
-use dialoguer::{console::Term, theme::ColorfulTheme, Input};
+use dialoguer::{console::Term, theme::ColorfulTheme, Input, Select};
 use jlrs::prelude::*;
 use std::env::{self};
 use std::fs::{DirBuilder, File};
 use std::io::prelude::*;
-use std::path;
+use std::path::{self, PathBuf};
 
 const JL_RUNTESTS_CONTENTS: &str = r###"module Test
 
@@ -27,10 +27,47 @@ pub fn new_script_ask_name(julia: &mut Julia) {
 
 // TODO! create default files unless ./src/Main.jl & /tests/run_tests.jl files exist
 pub fn new_script_w_name(julia: &mut Julia, script_name: &str) {
-    println!("\nActivating environment \"{}\"\n", &script_name);
+    // check if directory already exists: if so, ask if you want to continue (y / n)...
 
     // Ensure script names are capitalized, as per standard Julia practice
     let script_name = script_name.to_string().capitalize();
+    println!("\nActivating environment \"{}\"\n", &script_name);
+
+    // Option 1: fail on directory exists
+    generate_script(julia, &script_name).expect("Couldn't generate script");
+
+    // Option 2: check and attempt to force script creation in pre-existing directory.
+    // TODO: hook into Pkg at a lower level, or make a pull request asking to enable "force" functionality for creating a script in a pre-existinig directory..
+    let mut script_path = PathBuf::new();
+    let current_dir = env::current_dir().expect("couldn't get current directory");
+    script_path.push(current_dir);
+    script_path.push(&script_name);
+
+    if script_path.exists() {
+        let dir_exists_options = vec!["yes", "no"];
+        let check_to_continue_dir_exists_selection = Select::with_theme(&ColorfulTheme::default())
+            .with_prompt("Directory already exists; would you like to continue?")
+            .items(&dir_exists_options)
+            .default(1)
+            .interact()
+            .expect("couldn't get your answer");
+
+        println!(
+            "I got your answer: {:?}",
+            check_to_continue_dir_exists_selection
+        );
+        // if yes..
+        if check_to_continue_dir_exists_selection == 0 {
+            generate_script(julia, &script_name).expect("Couldn't generate script")
+        } else {
+            println!("Couldn't generate script for you :(")
+        }
+    } else {
+        generate_script(julia, &script_name).expect("Couldn't generate script")
+    }
+}
+
+fn generate_script(julia: &mut Julia, script_name: &String) -> Result<()> {
     let activate = julia
         .scope(|mut frame| {
             let jl_module_main = Module::main(&mut frame);
@@ -82,6 +119,7 @@ pub fn new_script_w_name(julia: &mut Julia, script_name: &str) {
         .expect("Could not write test file contents");
 
     println!("\n{:?}", activate.unwrap());
+    Ok(())
 }
 
 // // TODO! Change this function to handle setting up files in a target directory
