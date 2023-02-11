@@ -6,24 +6,24 @@ use std::fs::{DirBuilder, File};
 use std::io::prelude::*;
 use std::path;
 
-const JL_RUNTESTS_CONTENTS: &str = r###"module Test
+const JL_RUNTESTS_CONTENTS: &str = r###"module AppTests
 using Test
 
 include("../src/Main.jl")
 
 
 # write tests here...
-@testset "Main functions work" begin
+Test.@testset "Main functions work" begin
     username = "Alice"
 
-    @testset "Main.main(?username) methods work" begin
-        @test Main.main() == println("Hello, app user!")
-        @test Main.main(username) == println("Hello, Alice !!!")
+    Test.@testset "Main.main(?username) methods work" begin
+        Test.@test Main.main() == println("Hello, app user!")
+        Test.@test Main.main(username) == println("Hello, Alice !!!")
     end
 
 end
 
-end # module Test
+end # module AppTests
 "###;
 
 pub fn new_app_ask_name(julia: &mut Julia) {
@@ -39,10 +39,11 @@ pub fn new_app_ask_name(julia: &mut Julia) {
 
 // TODO! create default files unless ./src/Main.jl & /tests/run_tests.jl files exist
 pub fn new_app_w_name(julia: &mut Julia, app_name: &str) {
-    println!("\nActivating environment \"{}\"\n", &app_name);
-
     // Ensure app names are capitalized, as per standard Julia practice
     let app_name = app_name.to_string().capitalize();
+
+    println!("\nActivating environment \"{}\"\n", &app_name);
+
     let activate = julia
         .scope(|mut frame| {
             let jl_module_main = Module::main(&mut frame);

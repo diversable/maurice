@@ -182,9 +182,7 @@ function generate_docs(project_name)
     Pkg.activate(project_name)
 
     DocumenterTools.generate()
-
 end
-
 
 function make_app_in_target_dir(app_name::String)
     try
@@ -258,6 +256,37 @@ function compile_app(source_code_path::String, target_directory_path::String)
 end
 
 end # module Create
+
+module Test_Command
+using Pkg
+
+function run_tests()
+    cd("test")
+
+    # activate tests package
+    Pkg.activate(".")
+
+    # Ensure Test is in Project.toml deps
+    if ("Test" in keys(Pkg.project().dependencies))
+        println("Maurice is ready to test your project...")
+    else
+        Pkg.add("Test")
+    end
+
+    try
+        # Move back to root dir to test package
+        cd("..")
+        # Activate Main project prior to testing...
+        Pkg.activate(".")
+        Pkg.test()
+        return "done"
+    catch
+        return "failed to test project..."
+    end
+
+end
+
+end # module Test_Command
 
 end # module Maurice
 

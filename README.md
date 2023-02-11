@@ -1,10 +1,11 @@
 [![Julia-Rust](https://github.com/diversable/Maurice/actions/workflows/julia-rust.yml/badge.svg?branch=main)](https://github.com/diversable/Maurice/actions/workflows/julia-rust.yml)
 
-NOTICE:
+The `mce` (Maurice) CLI has useful functionality for beginners and advanced programmers - so feel free to give it a try and give feedback on the commands / workflow in the Github "issues".
 
-This software is under development and is currently in the 'Alpha' phase.
+Just be aware that this software is still under development and is currently in the 'Alpha' phase.
 
 
+There's more to come!
 
 
 _Windows Compatibility_:
@@ -17,7 +18,7 @@ The Julia language must be installed and on the user's path for this software to
 
 ---
 
-The `mce` (Maurice) CLI has some useful functionality - so feel free to give it a try and give feedback on the commands / workflow! There's more to come!
+
 
 The available commands are summarized here:
 (Full descriptions are explicated below)
@@ -27,6 +28,8 @@ The available commands are summarized here:
     - script [?script_name]
     - app [?app_name]
     - package [?package_name]
+  - test
+    - run
   - compile | create
     - app (*in progress)
     <!-- - sysimage -->
@@ -65,74 +68,97 @@ Some helpful workflow shortcuts with the `mce` (Maurice) CLI are:
 
 Currently, the CLI functions include:
 
-
+##### mce (new | generate)
 > mce (new | generate)
 
-=> _create a new environment & project structure; the CLI will ask for a project name_
+create a new environment & project structure; the CLI will ask for a project name
 
 
-> mce (new | generate) [?script_name]
+> mce (new | generate) script [?script_name]
 
-=> _same as above: create a new environment & project structure; the CLI will ask for a project name if one is not provided_
+same as above: create a new environment & project structure; the CLI will ask for a project name if one is not provided
 
-> mce (new | generate) [?app_name]
 
-=> _create a new app project structure; the CLI will ask for an app name if one is not provided_
+> mce (new | generate) app [?app_name]
 
-> mce (new | generate) [?package_name]
+create a new app project structure; the CLI will ask for an app name if one is not provided
 
-=> _ create a new package, using Pkmceemplates.jl (and the startup file written to ./julia/config); the CLI will ask for a package name if one is not provided_
 
+> mce (new | generate) package [?package_name]
+
+create a new package, using PkgTemplates.jl (and the template in the startup file written to ./julia/config); the CLI will ask for a package name if one is not provided
+
+
+##### mce jl
 
 > mce jl
 
-=> _start Julia with the project in the current directory activated (default), or run the Julia Repl with the global env. if not in a Julia project directory_
+start Julia with the project in the current directory activated (default), or run the Julia Repl with the global env. if not in a Julia project directory
 
 
 > mce jl (repl | run)
 
-=> _same as above: start Julia with the project in the current directory activated (default), or run the Julia Repl with the global env. if not in a Julia project directory_
+same as above: start Julia with the project in the current directory activated (default), or run the Julia Repl with the global env. if not in a Julia project directory
 
 
 > mce jl (pluto | notebook | nb)
 
-=> _starts Pluto.jl, the notebook environment written in native Julia. If Pluto is not installed, mce will install it for you._
+starts Pluto.jl, the notebook environment written in native Julia. If Pluto is not installed, mce will install it for you.
 
 
 > mce jl (edit | code)
 
-=> _open VSCode with the current directory, and start up a Julia process in the terminal for working / testing interactively as well; currently, VSCode must already be installed and on the the user's $PATH_
+open VSCode with the current directory, and start up a Julia process in the terminal for working / testing interactively as well; currently, VSCode must already be installed and on the the user's $PATH
 
+
+##### mce test
+
+> mce test
+
+run tests defined in the ./test/runtests.jl file
+
+
+> mce test run
+
+same as above; run tests defined in the ./test/runtests.jl file
+
+##### mce (compile | create)
+
+> mce compile [path_to_app_source] [path_for_compilation_output]
+
+Compile an app into an executable which can be run without Julia being installed
+
+##### mce pkg
 
 > mce pkg
 
-=> _get status of installed packages. NB: all commands default to current local environment for adding/removing packages, and fall back to global environment if not working in a project directory_
+get status of installed packages. NB: all commands default to current local environment for adding/removing packages, and fall back to global environment if not working in a project directory
 
 
 > mce pkg (status | list | ls)
 
-=> _get status of installed packages / list installed packages._
+get status of installed packages / list installed packages.
 
 
 > mce pkg add [package_name]
 
-=> _add a package from a Julia registry_
+add a package from a Julia registry
 
 
 > mce pkg (remove | rm | delete) [package_name]
 
-=> _remove an installed package; defaults to operating on local project environment, and falls back to global environment_
+remove an installed package; defaults to operating on local project environment, and falls back to global environment
 
 
 > mce pkg update [?package_name]
 
-=> _update all packages if the 'package_name' is not provided, or update specific package in local environment if 'package_name' is given_
+update all packages if the 'package_name' is not provided, or update specific package in local environment if 'package_name' is given
 
 
 ---
 
 
-Building from source:
+###### Building from source:
 
 Rust language must be installed to compile this tool; Rust can be installed using [the rustup tool](https://rustup.rs/).
 

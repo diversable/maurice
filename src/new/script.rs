@@ -7,9 +7,12 @@ use std::fs::{DirBuilder, File};
 use std::io::prelude::*;
 use std::path::{self, PathBuf};
 
-const JL_RUNTESTS_CONTENTS: &str = r###"module Test
-
+const JL_RUNTESTS_CONTENTS_1: &str = r###"module Test
+using Test
+using "###;
+const JL_RUNTESTS_CONTENTS_2: &str = r###": greet
 # write tests here...
+Test.@test greet() == print("Hello World!")
 
 end # module Test
 "###;
@@ -38,33 +41,34 @@ pub fn new_script_w_name(julia: &mut Julia, script_name: &str) {
 
     // Option 2: check and attempt to force script creation in pre-existing directory.
     // TODO: hook into Pkg at a lower level, or make a pull request asking to enable "force" functionality for creating a script in a pre-existinig directory..
-    let mut script_path = PathBuf::new();
-    let current_dir = env::current_dir().expect("couldn't get current directory");
-    script_path.push(current_dir);
-    script_path.push(&script_name);
+    // let mut script_path = PathBuf::new();
+    // let current_dir = env::current_dir().expect("couldn't get current directory");
+    // script_path.push(current_dir);
+    // script_path.push(&script_name);
 
-    if script_path.exists() {
-        let dir_exists_options = vec!["yes", "no"];
-        let check_to_continue_dir_exists_selection = Select::with_theme(&ColorfulTheme::default())
-            .with_prompt("Directory already exists; would you like to continue?")
-            .items(&dir_exists_options)
-            .default(1)
-            .interact()
-            .expect("couldn't get your answer");
+    // if script_path.exists() {
+    //     let dir_exists_options = vec!["yes", "no"];
+    //     let check_to_continue_dir_exists_selection = Select::with_theme(&ColorfulTheme::default())
+    //         .with_prompt("Directory already exists; would you like to continue?")
+    //         .items(&dir_exists_options)
+    //         .default(1)
+    //         .interact()
+    //         .expect("couldn't get your answer");
 
-        println!(
-            "I got your answer: {:?}",
-            check_to_continue_dir_exists_selection
-        );
-        // if yes..
-        if check_to_continue_dir_exists_selection == 0 {
-            generate_script(julia, &script_name).expect("Couldn't generate script")
-        } else {
-            println!("Couldn't generate script for you :(")
-        }
-    } else {
-        generate_script(julia, &script_name).expect("Couldn't generate script")
-    }
+    //     println!(
+    //         "I got your answer: {:?}",
+    //         check_to_continue_dir_exists_selection
+    //     );
+    //     // if yes..
+    //     if check_to_continue_dir_exists_selection == 0 {
+    //         generate_script(julia, &script_name).expect("Couldn't generate script")
+    //     } else {
+    //     // if no...
+    //         println!("Couldn't generate script for you :(")
+    //     }
+    // } else {
+    //     generate_script(julia, &script_name).expect("Couldn't generate script")
+    // }
 }
 
 fn generate_script(julia: &mut Julia, script_name: &String) -> Result<()> {
@@ -115,8 +119,12 @@ fn generate_script(julia: &mut Julia, script_name: &String) -> Result<()> {
     let mut jl_runtests_file =
         File::create(&tests_file_path).expect("could not create runtests.jl file");
 
-    write!(jl_runtests_file, "{}", JL_RUNTESTS_CONTENTS)
-        .expect("Could not write test file contents");
+    write!(
+        jl_runtests_file,
+        "{}{}{}",
+        JL_RUNTESTS_CONTENTS_1, &script_name, JL_RUNTESTS_CONTENTS_2
+    )
+    .expect("Could not write test file contents");
 
     println!("\n{:?}", activate.unwrap());
     Ok(())

@@ -37,6 +37,7 @@ use pkg::add_package::*;
 use pkg::remove_package::*;
 use pkg::status::*;
 use pkg::update::*;
+use test_command::run_tests::run_tests;
 
 fn cli() -> Command {
     Command::new("mce")
@@ -49,8 +50,7 @@ fn cli() -> Command {
         .display_name("maurice")
         // TODO! The workflow tip about `infer_subcommands` should be noted in the CLI's help text!
         .infer_subcommands(true)
-        .subcommand(
-            Command::new("jl")
+        .subcommand(Command::new("jl")
                 .about("start the Julia REPL using the project in the current directory; sub-commands start Pluto notebooks and VSCode")
                 .args_conflicts_with_subcommands(true)
                 .subcommand(
@@ -71,8 +71,7 @@ fn cli() -> Command {
                     .about("Both (a) starts VSCode using the current directory, and (b) starts the Julia REPL in the terminal for interactive use / testing")
                 ),
         )
-        .subcommand(
-            Command::new("pkg")
+        .subcommand(Command::new("pkg")
                 .about("gets the status of installed packages; sub-commands are available to manage packages in your project")
                 .args_conflicts_with_subcommands(true)
 
@@ -120,8 +119,7 @@ fn cli() -> Command {
                     .about("updates all packages, or updates a single package if a package_name is supplied; defaults to working on local environment. Eg. `mce pkg update` or `mce p up CSV`")
             )
         ) // END PKG Sub-command
-        .subcommand(
-            Command::new("new")
+        .subcommand(Command::new("new")
                 .about("creates new scripts, apps, and packages* (*feature in progress)")
                 .args_conflicts_with_subcommands(true)
                 // .arg_required_else_help(true)
@@ -161,6 +159,16 @@ fn cli() -> Command {
             // .visible_alias("cmd")
             .about("execute julia code from the command line...")
             .arg(arg!([JL_CODE]))
+        )
+        .subcommand(Command::new("test")
+            .about("test your script, app, or package")
+            .subcommand(Command::new("run")
+                .about("run tests defined in `test/runtests.jl` file")
+            )
+            // .subcommand("doctest")
+            // .subcommand(Command::new("add")
+            //     .about("add a package to the `test` dir's Project.toml")
+            // )
         )
 }
 
@@ -245,6 +253,16 @@ fn handle_raw_jl_string(jl_code: &str) -> Result<()> {
 
 fn handle_cli(mut julia: Julia, matches: ArgMatches) {
     match matches.subcommand() {
+        Some(("test", sub_matches)) => {
+            let test_cmd = sub_matches.subcommand().unwrap_or(("run", sub_matches));
+
+            match test_cmd {
+                ("run", _sub_matches) => run_tests(&mut julia),
+                _ => {
+                    unreachable!("Unsupported `new` subcommand",)
+                }
+            }
+        }
         Some(("run", sub_matches)) => {
             let empty = "ask_for_input".to_string();
             let jl_code = sub_matches
@@ -277,7 +295,7 @@ fn handle_cli(mut julia: Julia, matches: ArgMatches) {
         Some(("new", sub_matches)) => {
             let new_command = sub_matches
                 .subcommand()
-                // If an argument isn't supplied to `gt new <nothing>`, then default to creating a new environment
+                // If an argument isn't supplied to `mce new <nothing>`, then default to creating a new environment
                 .unwrap_or(("script", sub_matches));
 
             match new_command {
