@@ -39,6 +39,9 @@ pub fn new_script_w_name(julia: &mut Julia, script_name: &str) {
     // Option 1: fail on directory exists
     generate_script(julia, &script_name).expect("Couldn't generate script");
 
+    // Run PostHook
+    new_script_posthook(julia, &script_name).expect("Couldn't run user posthook");
+
     // Option 2: check and attempt to force script creation in pre-existing directory.
     // TODO: hook into Pkg at a lower level, or make a pull request asking to enable "force" functionality for creating a script in a pre-existinig directory..
     // let mut script_path = PathBuf::new();
@@ -72,35 +75,30 @@ pub fn new_script_w_name(julia: &mut Julia, script_name: &str) {
 }
 
 fn generate_script(julia: &mut Julia, script_name: &String) -> Result<()> {
-    let activate = julia
-        .scope(|mut frame| {
-            let jl_module_main = Module::main(&mut frame);
+    let script = julia.scope(|mut frame| {
+        let jl_module_main = Module::main(&mut frame);
 
-            let script_name = JuliaString::new(&mut frame, &script_name);
+        let script_name = JuliaString::new(&mut frame, &script_name);
 
-            unsafe {
-                jl_module_main
-                    // the submodule doesn't have to be rooted because it's never reloaded.
-                    .submodule(&mut frame, "Maurice")?
-                    .submodule(&mut frame, "New")?
-                    // the same holds true for the function: the module is never reloaded so it's globally rooted
-                    .function(&mut frame, "activate_script_in_target_dir")?
-                    //
-                    // CALLING A FUNCTION
-                    //
-                    // Call the function with the target Julia frame and 1 argument
-                    .call1(&mut frame, script_name.as_value())
-                    //
-                    // If you don't want to use the exception, it can be converted to a `JlrsError`
-                    // In this case the error message will contain the message that calling `display` in Julia would show
-                    .into_jlrs_result()?
-                    .unbox::<String>()
-            }
-        })
-        .expect("Result is an error");
-
-    // TODO! Change the create_default.... fn to handle a target directory for this funcion!
-    // create_default_files_for_env().expect("Couldn't write default files for the environment");
+        unsafe {
+            jl_module_main
+                // the submodule doesn't have to be rooted because it's never reloaded.
+                .submodule(&mut frame, "Maurice")?
+                .submodule(&mut frame, "New")?
+                // the same holds true for the function: the module is never reloaded so it's globally rooted
+                .function(&mut frame, "activate_script_in_target_dir")?
+                //
+                // CALLING A FUNCTION
+                //
+                // Call the function with the target Julia frame and 1 argument
+                .call1(&mut frame, script_name.as_value())
+                //
+                // If you don't want to use the exception, it can be converted to a `JlrsError`
+                // In this case the error message will contain the message that calling `display` in Julia would show
+                .into_jlrs_result()?
+                .unbox::<String>()
+        }
+    })?;
 
     let current_dir = env::current_dir().expect("couldn't get current directory");
 
@@ -126,42 +124,38 @@ fn generate_script(julia: &mut Julia, script_name: &String) -> Result<()> {
     )
     .expect("Could not write test file contents");
 
-    println!("\n{:?}", activate.unwrap());
-
-    // Run PostHook
-    new_script_posthook(julia, script_name)?;
+    println!("\n{:?}", script.unwrap());
 
     Ok(())
 }
 
 fn new_script_posthook(julia: &mut Julia, script_name: &String) -> Result<()> {
-    let posthook = julia
-        .scope(|mut frame| {
-            let jl_module_main = Module::main(&mut frame);
+    let posthook = julia.scope(|mut frame| {
+        let jl_module_main = Module::main(&mut frame);
 
-            let script_name = JuliaString::new(&mut frame, &script_name);
+        let script_name = JuliaString::new(&mut frame, &script_name);
 
-            unsafe {
-                jl_module_main
-                    // the submodule doesn't have to be rooted because it's never reloaded.
-                    .submodule(&mut frame, "Maurice")?
-                    .submodule(&mut frame, "Hooks")?
-                    // the same holds true for the function: the module is never reloaded so it's globally rooted
-                    .function(&mut frame, "new_script_posthook")?
-                    //
-                    // CALLING A FUNCTION
-                    //
-                    // Call the function with the target Julia frame and 1 argument
-                    .call1(&mut frame, script_name.as_value())
-                    //
-                    // If you don't want to use the exception, it can be converted to a `JlrsError`
-                    // In this case the error message will contain the message that calling `display` in Julia would show
-                    .into_jlrs_result()?
-                    .unbox::<i32>()
-                // .unbox::<String>()
-            }
-        })
-        .expect("Result is an error");
+        unsafe {
+            jl_module_main
+                // the submodule doesn't have to be rooted because it's never reloaded.
+                .submodule(&mut frame, "Maurice")?
+                .submodule(&mut frame, "Hooks")?
+                // the same holds true for the function: the module is never reloaded so it's globally rooted
+                .function(&mut frame, "new_script_posthook")?
+                //
+                // CALLING A FUNCTION
+                //
+                // Call the function with the target Julia frame and 1 argument
+                .call1(&mut frame, script_name.as_value())
+                //
+                // If you don't want to use the exception, it can be converted to a `JlrsError`
+                // In this case the error message will contain the message that calling `display` in Julia would show
+                .into_jlrs_result()?
+                .unbox::<i32>()
+            // .unbox::<String>()
+        }
+    })?;
+    // .expect("Result is an error");
 
     match posthook {
         0 => Ok(()),

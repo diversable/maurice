@@ -35,8 +35,9 @@ pub fn write_hooks_script_to_disk() -> std::io::Result<()> {
 
 pub const JULIA_FILE_CONTENTS: &str = r###"
 module Hooks
+# All functions must return either a "0" ('success') or "1" (error) value in order to work with the Maurice (mce) app...
 
-function new_script_posthook(script_name::String)::Cint
+function new_script_posthook(script_name::String)
     try
         println("hello from the new script posthook! You gave me the script name: `$script_name`")
         # return "success"
