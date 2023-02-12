@@ -370,7 +370,6 @@ fn handle_cli(mut julia: Julia, matches: ArgMatches) {
                     } else {
                         // if sysimage is chosen...
                         println!("This feature has not yet been implemented; check back later, or file an issue on the repo!");
-                        unimplemented!()
                     }
                 }
                 ("app", sub_matches) => {

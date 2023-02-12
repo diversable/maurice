@@ -25,13 +25,13 @@ The available commands are summarized here:
 
 - mce
   - new | generate
-    - script [?script_name]
-    - app [?app_name]
-    - package [?package_name]
+    - script <script_name>
+    - app <app_name>
+    - package <package_name>
   - test
     - run
   - compile | create
-    - app [app_src_dir] [compiled_app_output]
+    - app <app_src_dir> <compiled_app_output>
     <!-- - sysimage -->
   - jl
     - repl | run
@@ -39,9 +39,9 @@ The available commands are summarized here:
     - edit | code
   - pkg
     - status | list | ls
-    - add [package_name]
-    - remove | rm | delete [?package_name]
-    - update [?package_name]
+    - add <package_name>
+    - remove | rm | delete <?package_name>
+    - update <?package_name>
 
 NOTE: Using partial commands also works with this CLI tool, so using a command like `mce p up` will work the same as the command `mce pkg update` and will update all packages; `mce j ed` will work the same as `mce jl edit` and will start up VSCode as well as start the Julia process in the terminal for you.
 
@@ -74,17 +74,17 @@ Currently, the CLI functions include:
 create a new environment & project structure; the CLI will ask for a project name
 
 
-> mce (new | generate) script [?script_name]
+> mce (new | generate) script <script_name>
 
 same as above: create a new environment & project structure; the CLI will ask for a project name if one is not provided
 
 
-> mce (new | generate) app [?app_name]
+> mce (new | generate) app <app_name>
 
 create a new app project structure; the CLI will ask for an app name if one is not provided
 
 
-> mce (new | generate) package [?package_name]
+> mce (new | generate) package <package_name>
 
 create a new package, using PkgTemplates.jl (and the template in the startup file written to ./julia/config); the CLI will ask for a package name if one is not provided
 
@@ -124,7 +124,7 @@ same as above; run tests defined in the ./test/runtests.jl file
 
 ##### mce (compile | create)
 
-> mce compile app [path_to_app_source] [path_for_compilation_output]
+> mce compile app <path_to_app_source> <path_for_compilation_output>
 
 Compile an app into an executable which can be run without Julia being installed
 
@@ -140,17 +140,17 @@ get status of installed packages. NB: all commands default to current local envi
 get status of installed packages / list installed packages.
 
 
-> mce pkg add [package_name]
+> mce pkg add <package_name>
 
 add a package from a Julia registry
 
 
-> mce pkg (remove | rm | delete) [package_name]
+> mce pkg (remove | rm | delete) <package_name>
 
 remove an installed package; defaults to operating on local project environment, and falls back to global environment
 
 
-> mce pkg update [?package_name]
+> mce pkg update <?package_name>
 
 update all packages if the 'package_name' is not provided, or update specific package in local environment if 'package_name' is given
 
