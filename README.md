@@ -66,9 +66,11 @@ Some helpful workflow shortcuts with the `mce` (Maurice) CLI are:
 
 ---
 
-Currently, the CLI functions include:
 
-##### mce (new | generate)
+Currently, the CLI functions include:
+(note: if arguments are not given by the user on the command line, then Maurice will ask for them explicitly)
+
+#### mce (new | generate)
 > mce (new | generate)
 
 create a new environment & project structure; the CLI will ask for a project name
@@ -89,7 +91,7 @@ create a new app project structure; the CLI will ask for an app name if one is n
 create a new package, using PkgTemplates.jl (and the template in the startup file written to ./julia/config); the CLI will ask for a package name if one is not provided
 
 
-##### mce jl
+#### mce jl
 
 > mce jl
 
@@ -111,7 +113,7 @@ starts Pluto.jl, the notebook environment written in native Julia. If Pluto is n
 open VSCode with the current directory, and start up a Julia process in the terminal for working / testing interactively as well; currently, VSCode must already be installed and on the the user's $PATH
 
 
-##### mce test
+#### mce test
 
 > mce test
 
@@ -122,13 +124,13 @@ run tests defined in the ./test/runtests.jl file
 
 same as above; run tests defined in the ./test/runtests.jl file
 
-##### mce (compile | create)
+#### mce (compile | create)
 
 > mce compile app <path_to_app_source> <path_for_compilation_output>
 
 Compile an app into an executable which can be run without Julia being installed
 
-##### mce pkg
+#### mce pkg
 
 > mce pkg
 
@@ -158,7 +160,7 @@ update all packages if the 'package_name' is not provided, or update specific pa
 ---
 
 
-###### Building from source:
+### Building from source:
 
 Rust language must be installed to compile this tool; Rust can be installed using [the rustup tool](https://rustup.rs/).
 
