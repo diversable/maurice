@@ -28,15 +28,16 @@ The available commands are summarized here:
     - script <script_name>
     - app <app_name>
     - package <package_name>
+  - jl
+    - repl | run
+    - pluto | notebook | nb
+    - edit | code
   - test
     - run
   - compile | create
     - app <app_src_dir> <compiled_app_output>
     <!-- - sysimage -->
-  - jl
-    - repl | run
-    - pluto | notebook | nb
-    - edit | code
+
   - pkg
     - status | list | ls
     - add <package_name>
