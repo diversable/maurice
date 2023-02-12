@@ -29,18 +29,18 @@ The available commands are summarized here:
     - app <app_name>
     - package <package_name>
   - jl
-    - repl | run
+    - repl
     - pluto | notebook | nb
     - edit | code
+  - run | exec <script_to_run.jl>
   - test
     - run
   - compile | create
     - app <app_src_dir> <compiled_app_output>
     <!-- - sysimage -->
-
   - pkg
     - status | list | ls
-    - add <package_name>
+    - add | install <package_name>
     - remove | rm | delete <package_name>
     - update <?package_name>
 
@@ -113,6 +113,11 @@ starts Pluto.jl, the notebook environment written in native Julia. If Pluto is n
 
 open VSCode with the current directory, and start up a Julia process in the terminal for working / testing interactively as well; currently, VSCode must already be installed and on the the user's $PATH
 
+#### <ins>mce run</ins>
+
+> mce run <script_to_run.jl>
+
+run the script provided on the command line. If a script name isn't provided, Maurice will ask for the path to a script.
 
 #### <ins>mce test</ins>
 
