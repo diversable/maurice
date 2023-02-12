@@ -261,6 +261,8 @@ module Test_Command
 using Pkg
 
 function run_tests()
+
+    # move into the "./test" directory...
     cd("test")
 
     # activate tests package

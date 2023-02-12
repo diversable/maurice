@@ -1,7 +1,24 @@
 use jlrs::prelude::*;
 
+use std::env;
+use std::path::PathBuf;
+
 /// Run tests from user's project's `test` directory; ie. run the `runtests.jl` file
 pub fn run_tests(julia: &mut Julia) {
+    // make sure you're in the project root before calling run_tests.jl
+    let current_dir = env::current_dir().expect("Couldn't get current directory");
+
+    // If you're in the project's test directory, move back to project root before running tests, as required by `Pkg.test()`
+    if current_dir.ends_with("test") {
+        let project_root = PathBuf::from("../");
+        env::set_current_dir(project_root).expect("could not set directory back to project root");
+        run_julia_tests(julia);
+    } else {
+        run_julia_tests(julia);
+    }
+}
+
+fn run_julia_tests(julia: &mut Julia) {
     let status = julia
         .scope(|mut frame| {
             let jl_module_main = Module::main(&mut frame);

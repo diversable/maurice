@@ -329,25 +329,6 @@ fn handle_cli(mut julia: Julia, matches: ArgMatches) {
                         // for both Option 1 & 2
                         let package_name = sub_matches.get_one::<String>("PACKAGE_NAME");
 
-                        // Option 1:
-                        // new_pkg_w_name(
-                        //     &mut julia,
-                        //     package_name
-                        //         .expect("Coulnd't extract package name from user-provided input"),
-                        // );
-
-                        // Option 2: exec Julia process for package creation
-                        // let template_cmd = format!(
-                        //     "using PkgTemplates; t = Template(; user=\"diversable\"); t({:?})",
-                        //     package_name.expect("couldn't get package name from string")
-                        // );
-
-                        // println!("{}", template_cmd);
-
-                        // let package_cmd = cmd!("julia", "-E", template_cmd).run();
-                        // println!("package_cmd: {:?}", package_cmd);
-
-                        // Option 3:
                         if let Some(package_name) = package_name {
                             // new_package_w_name(&mut julia, sub_matches)
                             new_package_w_name(&mut julia, package_name.to_owned())
@@ -432,19 +413,19 @@ fn handle_cli(mut julia: Julia, matches: ArgMatches) {
                     let local_jl_project_toml = PathBuf::from("./Project.toml");
                     let parent_jl_project_toml = PathBuf::from("../Project.toml");
                     if local_jl_project_toml.exists() {
-                        println!("Activating local project..");
+                        println!("Activating local project...");
                         let julia_args_project =
                             CString::new("--project=@.").expect("CString::new failed...");
                         execvp(julia_executable, &[julia_args_julia, julia_args_project])
                             .expect("failed to exec Julia process...");
                     } else if parent_jl_project_toml.exists() {
-                        println!("Activating parent project..");
+                        println!("Activating parent project...");
                         let julia_args_project =
                             CString::new("--project=..").expect("CString::new failed...");
                         execvp(julia_executable, &[julia_args_julia, julia_args_project])
                             .expect("failed to exec Julia process...");
                     } else {
-                        println!("No local project found..");
+                        println!("No local project found...");
                         execvp(julia_executable, &[julia_args_julia])
                             .expect("failed to exec Julia process...");
                     }
