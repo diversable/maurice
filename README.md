@@ -70,28 +70,28 @@ Some helpful workflow shortcuts with the `mce` (Maurice) CLI are:
 Currently, the CLI functions include:
 (note: if arguments are not given by the user on the command line, then Maurice will ask for them explicitly)
 
-#### mce (new | generate)
+#### <ins>mce (new | generate)</ins>
 > mce (new | generate)
 
 create a new environment & project structure; the CLI will ask for a project name
 
 
-> mce (new | generate) script <script_name>
+> mce new script <script_name>
 
 same as above: create a new environment & project structure; the CLI will ask for a project name if one is not provided
 
 
-> mce (new | generate) app <app_name>
+> mce new app <app_name>
 
 create a new app project structure; the CLI will ask for an app name if one is not provided
 
 
-> mce (new | generate) package <package_name>
+> mce new package <package_name>
 
 create a new package, using PkgTemplates.jl (and the template in the startup file written to ./julia/config); the CLI will ask for a package name if one is not provided
 
 
-#### mce jl
+#### <ins>mce jl</ins>
 
 > mce jl
 
@@ -113,7 +113,7 @@ starts Pluto.jl, the notebook environment written in native Julia. If Pluto is n
 open VSCode with the current directory, and start up a Julia process in the terminal for working / testing interactively as well; currently, VSCode must already be installed and on the the user's $PATH
 
 
-#### mce test
+#### <ins>mce test</ins>
 
 > mce test
 
@@ -124,13 +124,13 @@ run tests defined in the ./test/runtests.jl file
 
 same as above; run tests defined in the ./test/runtests.jl file
 
-#### mce (compile | create)
+#### <ins>mce (compile | create)</ins>
 
 > mce compile app <path_to_app_source> <path_for_compilation_output>
 
 Compile an app into an executable which can be run without Julia being installed
 
-#### mce pkg
+#### <ins>mce pkg</ins>
 
 > mce pkg
 
