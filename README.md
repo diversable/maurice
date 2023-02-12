@@ -31,7 +31,7 @@ The available commands are summarized here:
   - test
     - run
   - compile | create
-    - app (*in progress)
+    - app [app_src_dir] [compiled_app_output]
     <!-- - sysimage -->
   - jl
     - repl | run
@@ -124,7 +124,7 @@ same as above; run tests defined in the ./test/runtests.jl file
 
 ##### mce (compile | create)
 
-> mce compile [path_to_app_source] [path_for_compilation_output]
+> mce compile app [path_to_app_source] [path_for_compilation_output]
 
 Compile an app into an executable which can be run without Julia being installed
 

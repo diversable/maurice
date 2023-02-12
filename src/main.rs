@@ -345,9 +345,34 @@ fn handle_cli(mut julia: Julia, matches: ArgMatches) {
             }
         }
         Some(("compile", sub_matches)) => {
-            let compile_cmd = sub_matches.subcommand().unwrap();
+            let compile_cmd = sub_matches
+                .subcommand()
+                // .unwrap();
+                .unwrap_or(("ask_for_input", sub_matches));
 
             match compile_cmd {
+                ("ask_for_input", _sub_matches) => {
+                    println!("asking for input...");
+
+                    let compile_ask_input_options = vec!["app", "system image (sysimage)"];
+                    let compile_cmd_selection = Select::with_theme(&ColorfulTheme::default())
+                        .with_prompt("Would you like to compile: an app, or a system image?")
+                        .items(&compile_ask_input_options)
+                        .default(0)
+                        .interact()
+                        .expect("couldn't parse user input");
+
+                    // If "app" (0th item in options list) is selected, then compile app; else compile sysimage
+                    if compile_cmd_selection == 0 {
+                        let source_path = get_app_source_path();
+                        let target_path = get_app_compile_target_path();
+                        compile_app(&mut julia, source_path.as_str(), target_path.as_str())
+                    } else {
+                        // if sysimage is chosen...
+                        println!("This feature has not yet been implemented; check back later, or file an issue on the repo!");
+                        unimplemented!()
+                    }
+                }
                 ("app", sub_matches) => {
                     // Check for positional arguments (first, app source path), if the user provided it; if not, ask for it with the get_... functions...
                     if let Some(_) = sub_matches.get_one::<String>("JULIA_PROJECT_PATH") {
