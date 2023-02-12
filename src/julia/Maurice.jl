@@ -1,4 +1,6 @@
 module Maurice
+include("./Hooks.jl")
+
 
 module Jl_Command
 using Pkg

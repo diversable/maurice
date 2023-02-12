@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Ok, Result};
 use capitalize::Capitalize;
 use dialoguer::{console::Term, theme::ColorfulTheme, Input, Select};
 use jlrs::prelude::*;
@@ -127,7 +127,49 @@ fn generate_script(julia: &mut Julia, script_name: &String) -> Result<()> {
     .expect("Could not write test file contents");
 
     println!("\n{:?}", activate.unwrap());
+
+    // Run PostHook
+    new_script_posthook(julia, script_name)?;
+
     Ok(())
+}
+
+fn new_script_posthook(julia: &mut Julia, script_name: &String) -> Result<()> {
+    let posthook = julia
+        .scope(|mut frame| {
+            let jl_module_main = Module::main(&mut frame);
+
+            let script_name = JuliaString::new(&mut frame, &script_name);
+
+            unsafe {
+                jl_module_main
+                    // the submodule doesn't have to be rooted because it's never reloaded.
+                    .submodule(&mut frame, "Maurice")?
+                    .submodule(&mut frame, "Hooks")?
+                    // the same holds true for the function: the module is never reloaded so it's globally rooted
+                    .function(&mut frame, "new_script_posthook")?
+                    //
+                    // CALLING A FUNCTION
+                    //
+                    // Call the function with the target Julia frame and 1 argument
+                    .call1(&mut frame, script_name.as_value())
+                    //
+                    // If you don't want to use the exception, it can be converted to a `JlrsError`
+                    // In this case the error message will contain the message that calling `display` in Julia would show
+                    .into_jlrs_result()?
+                    .unbox::<i32>()
+                // .unbox::<String>()
+            }
+        })
+        .expect("Result is an error");
+
+    match posthook {
+        0 => Ok(()),
+        1 => {
+            return Err(anyhow!("Could not execute user posthook: new script"));
+        }
+        _ => return Err(anyhow!("Error parsing return value: new script")),
+    }
 }
 
 // // TODO! Change this function to handle setting up files in a target directory

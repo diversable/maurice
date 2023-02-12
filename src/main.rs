@@ -39,6 +39,8 @@ use pkg::status::*;
 use pkg::update::*;
 use test_command::run_tests::run_tests;
 
+use crate::julia::hooks::write_hooks_script_to_disk;
+
 fn cli() -> Command {
     Command::new("mce")
         .about("\nMaurice (mce): The Julia project manager")
@@ -120,7 +122,7 @@ fn cli() -> Command {
             )
         ) // END PKG Sub-command
         .subcommand(Command::new("new")
-                .about("creates new scripts, apps, and packages* (*feature in progress)")
+                .about("creates new scripts, apps, and packages")
                 .args_conflicts_with_subcommands(true)
                 // .arg_required_else_help(true)
                 .visible_alias("generate")
@@ -723,22 +725,43 @@ make_package = template()
         )?;
         println!("Wrote you a startup.jl file at ~/.julia/config/startup.jl");
     }
-    // Once Julia is already installed...
+
+    //
+    // Write Hooks.jl file if it doesn't exist
+    //
+    let hooks_file_path = PathBuf::from(".julia/maurice/Hooks.jl");
+
+    let mut hooks_path = PathBuf::new();
+    hooks_path.push(&home_dir);
+    hooks_path.push(&hooks_file_path);
+
+    // if the hooks file does not exist, then create the file...
+    if !(hooks_path.exists()) {
+        println!(
+            "No 'hooks' file found; writing a hooks file to {:?} for you to hack on :)",
+            hooks_path
+        );
+
+        write_hooks_script_to_disk().expect("couldn't write hooks script to disk");
+    }
+
+    // Once Julia is already installed... Start Julia
     //
     let mut julia_pending = unsafe { RuntimeBuilder::new().start().expect("Could not init Julia") };
 
     let mut frame = StackFrame::new();
     let mut julia = julia_pending.instance(&mut frame);
 
+    // ---Julia started---
+
+    // Write Maurice.jl file
     let julia_dir = PathBuf::from(".julia/maurice/Maurice.jl");
     let mut maurice_jl_path = PathBuf::new();
-    maurice_jl_path.push(home_dir);
+    maurice_jl_path.push(&home_dir);
     maurice_jl_path.push(julia_dir);
 
     // Include some custom code defined in <file>.
     // This is safe because the included code doesn't do any strange things.
-
-    // TODO! Create config which allows users to hack on the Maurice.jl file without overwriting the file every time the app starts up...
 
     if maurice_jl_path.exists() {
         let latest_jl_file_contents = JULIA_FILE_CONTENTS.to_string();

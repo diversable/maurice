@@ -4,6 +4,8 @@
 //
 #![allow(dead_code)]
 
+pub mod hooks;
+
 // use jlrs::prelude::*;
 use dirs::home_dir;
 use std::fs::{self, File};
@@ -42,6 +44,8 @@ pub fn write_julia_script_to_disk() -> std::io::Result<()> {
 
 pub const JULIA_FILE_CONTENTS: &str = r###"
 module Maurice
+include("./Hooks.jl")
+
 
 module Jl_Command
 using Pkg
@@ -304,6 +308,8 @@ module Test_Command
 using Pkg
 
 function run_tests()
+
+    # move into the "./test" directory...
     cd("test")
 
     # activate tests package
