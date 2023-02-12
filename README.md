@@ -40,7 +40,7 @@ The available commands are summarized here:
   - pkg
     - status | list | ls
     - add <package_name>
-    - remove | rm | delete <?package_name>
+    - remove | rm | delete <package_name>
     - update <?package_name>
 
 NOTE: Using partial commands also works with this CLI tool, so using a command like `mce p up` will work the same as the command `mce pkg update` and will update all packages; `mce j ed` will work the same as `mce jl edit` and will start up VSCode as well as start the Julia process in the terminal for you.
