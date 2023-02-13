@@ -211,16 +211,18 @@ using Documenter
 using DocumenterTools
 using PkgTemplates
 
-function activate_script_in_target_dir(script_name::String)
+function new_script_in_target_dir(script_name::String)
     try
         Pkg.generate(script_name)
         Pkg.activate(script_name)
         # TODO! This function is fallible; fix this implementation!
         generate_docs(script_name)
 
-        return "New script created: $script_name"
+        # return "New script created: $script_name"
+        return 0
     catch
-        return "Unable to create script in the target directory"
+        # return "Unable to create script in the target directory"
+        return 1
     end
 end
 
